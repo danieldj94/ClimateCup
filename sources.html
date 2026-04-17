@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sources & Citations · Global Spectacle, Local Footprint</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#f5f7fa;--surface:#fff;--border:#dde3ec;
+      --green:#00a86b;--green-lt:#e6f7f1;--green-dk:#007a4d;
+      --red:#e8273a;--amber:#e07b00;--amber-lt:#fdf3e3;
+      --blue:#1a6fdb;--blue-lt:#e8f0fc;
+      --text:#0f1c2e;--muted:#6b7f99;
+      --dark:#0a1220;--gold:#c9a84c;
+      --hero:'Bebas Neue',sans-serif;--body:'DM Sans',sans-serif;--mono:'DM Mono',monospace;
+    }
+    html{scroll-behavior:smooth}
+    body{background:var(--bg);color:var(--text);font-family:var(--body);overflow-x:hidden}
+
+    /* NAV */
+    nav{position:fixed;top:0;left:0;right:0;z-index:300;display:flex;align-items:center;justify-content:space-between;padding:1.1rem 3rem;background:rgba(10,18,32,.92);backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,.06)}
+    .nav-logo{font-family:var(--mono);font-size:.72rem;color:var(--green);letter-spacing:.1em;text-transform:uppercase;text-decoration:none;display:flex;align-items:center;gap:.6rem}
+    .nav-logo::before{content:'';width:8px;height:8px;background:var(--green);border-radius:50%;animation:pulse 2s ease infinite;flex-shrink:0}
+    @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.7)}}
+    .nav-links{display:flex;gap:2rem;list-style:none}
+    .nav-links a{font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.4);text-decoration:none;transition:color .2s;font-family:var(--mono)}
+    .nav-links a:hover{color:rgba(255,255,255,.8)}
+    .nav-links a.active{color:var(--green)}
+
+    /* HERO */
+    .page-hero{padding:7rem 3rem 0;background:var(--dark);min-height:300px;display:flex;flex-direction:column;justify-content:flex-end;position:relative;overflow:hidden}
+    .ph-bg{position:absolute;inset:0;background-image:url('https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=1600&auto=format&fit=crop&q=80');background-size:cover;background-position:center;opacity:.16}
+    .ph-overlay{position:absolute;inset:0;background:linear-gradient(to top,var(--dark) 30%,rgba(10,18,32,.55) 65%,rgba(10,18,32,.2))}
+    .ph-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);background-size:60px 60px;pointer-events:none}
+    .htag{font-family:var(--mono);font-size:.68rem;letter-spacing:.22em;text-transform:uppercase;color:var(--green);margin-bottom:.8rem;position:relative}
+    .page-hero h1{font-family:var(--hero);font-size:clamp(3rem,7vw,5rem);line-height:.92;text-transform:uppercase;color:#fff;position:relative;margin-bottom:.9rem}
+    .page-hero h1 em{color:var(--green);font-style:normal}
+    .page-hero p{max-width:600px;font-size:.9rem;line-height:1.72;color:rgba(255,255,255,.42);font-weight:300;position:relative;padding-bottom:3rem}
+
+    /* ACCURACY BANNER */
+    .accuracy-banner{background:var(--dark);border-bottom:1px solid rgba(255,255,255,.06);padding:1.4rem 3rem;display:flex;gap:1rem;align-items:flex-start}
+    .acc-badge{font-family:var(--mono);font-size:.54rem;letter-spacing:.14em;text-transform:uppercase;background:rgba(26,111,219,.15);color:var(--blue);border:1px solid rgba(26,111,219,.25);padding:.25rem .6rem;border-radius:2px;flex-shrink:0;margin-top:.08rem;white-space:nowrap}
+    .accuracy-banner p{font-size:.8rem;line-height:1.65;color:rgba(255,255,255,.35);font-weight:300}
+    .accuracy-banner p strong{color:rgba(255,255,255,.62)}
+
+    /* LAYOUT */
+    .sources-wrap{display:grid;grid-template-columns:210px 1fr;gap:0;max-width:1240px;margin:0 auto;padding:3rem 3rem 5rem}
+
+    /* SIDEBAR */
+    .sources-nav{position:sticky;top:5.5rem;align-self:start;padding-right:1.8rem;border-right:1px solid var(--border)}
+    .sn-label{font-family:var(--mono);font-size:.52rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:.8rem;padding-left:.4rem}
+    .sn-links{list-style:none;display:flex;flex-direction:column;gap:.08rem}
+    .sn-links a{font-family:var(--mono);font-size:.6rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-decoration:none;padding:.35rem .65rem;border-radius:2px;transition:all .15s;display:flex;align-items:center;gap:.45rem}
+    .sn-links a::before{content:'';width:4px;height:4px;border-radius:50%;background:var(--border);flex-shrink:0;transition:background .15s}
+    .sn-links a:hover,.sn-links a.on{color:var(--green);background:var(--green-lt)}
+    .sn-links a:hover::before,.sn-links a.on::before{background:var(--green)}
+
+    /* CONTENT */
+    .sources-content{padding-left:2.5rem}
+
+    /* Legend */
+    .legend{display:flex;gap:1.5rem;flex-wrap:wrap;margin-bottom:2rem;padding:.85rem 1.1rem;background:var(--surface);border:1px solid var(--border);border-radius:3px}
+    .leg-item{display:flex;align-items:center;gap:.45rem;font-family:var(--mono);font-size:.55rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+    .leg-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+
+    /* Accuracy note */
+    .accuracy-note{background:var(--dark);border-radius:4px;padding:1.8rem 2rem;margin-bottom:2.5rem;position:relative;overflow:hidden}
+    .accuracy-note::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 60% at 100% 0%,rgba(0,168,107,.07),transparent);pointer-events:none}
+    .accuracy-note h3{font-family:var(--hero);font-size:1.3rem;text-transform:uppercase;color:#fff;margin-bottom:.9rem;position:relative}
+    .accuracy-note p{font-size:.81rem;line-height:1.72;color:rgba(255,255,255,.4);font-weight:300;margin-bottom:.55rem;position:relative}
+    .accuracy-note p:last-child{margin-bottom:0}
+
+    /* Source groups */
+    .source-group{margin-bottom:3.5rem;scroll-margin-top:5.5rem}
+    .group-header{display:flex;align-items:center;gap:1rem;padding:.9rem 1.4rem;background:var(--dark);border-radius:3px 3px 0 0;border:1px solid rgba(255,255,255,.06)}
+    .group-label{font-family:var(--mono);font-size:.5rem;letter-spacing:.18em;text-transform:uppercase;color:var(--green);margin-bottom:.15rem}
+    .group-title{font-family:var(--hero);font-size:1.35rem;text-transform:uppercase;color:#fff;line-height:1}
+    .group-count{font-family:var(--mono);font-size:.52rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.28);margin-left:auto;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);padding:.18rem .48rem;border-radius:2px}
+
+    /* Source cards */
+    .source-card{background:var(--surface);border:1px solid var(--border);border-left:none;border-top:none;padding:1.2rem 1.5rem;position:relative;transition:background .15s}
+    .source-card:last-child{border-radius:0 0 3px 3px}
+    .source-card:hover{background:#fafbfd}
+    .source-card::before{content:'';position:absolute;top:0;left:0;bottom:0;width:3px}
+    .source-card.primary::before{background:var(--green)}
+    .source-card.secondary::before{background:var(--blue)}
+    .source-card.context::before{background:var(--amber)}
+    .source-card.media::before{background:var(--muted)}
+    .sc-top{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;margin-bottom:.4rem}
+    .sc-title{font-weight:600;font-size:.87rem;line-height:1.4;color:var(--text)}
+    .sc-badge{font-family:var(--mono);font-size:.49rem;letter-spacing:.1em;text-transform:uppercase;padding:.16rem .46rem;border-radius:2px;flex-shrink:0;margin-top:.15rem}
+    .sc-badge.primary{background:var(--green-lt);color:var(--green-dk)}
+    .sc-badge.secondary{background:var(--blue-lt);color:var(--blue)}
+    .sc-badge.context{background:var(--amber-lt);color:var(--amber)}
+    .sc-badge.media{background:#f1f5f9;color:var(--muted)}
+    .sc-org{font-family:var(--mono);font-size:.58rem;letter-spacing:.08em;color:var(--muted);text-transform:uppercase;margin-bottom:.38rem}
+    .sc-desc{font-size:.81rem;line-height:1.65;color:var(--muted);font-weight:300;margin-bottom:.6rem}
+    .sc-meta{display:flex;align-items:center;gap:1.1rem;flex-wrap:wrap;margin-bottom:.45rem}
+    .sc-meta-item{font-family:var(--mono);font-size:.54rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+    .sc-link{font-family:var(--mono);font-size:.56rem;letter-spacing:.06em;text-transform:uppercase;color:var(--blue);text-decoration:none}
+    .sc-link:hover{text-decoration:underline}
+    .sc-used{display:flex;gap:.32rem;flex-wrap:wrap}
+    .used-tag{font-family:var(--mono);font-size:.49rem;letter-spacing:.08em;text-transform:uppercase;background:var(--bg);border:1px solid var(--border);color:var(--muted);padding:.12rem .4rem;border-radius:2px}
+
+    /* Framework cards */
+    .framework-hero{background:linear-gradient(135deg,var(--dark),#0d2137);border:1px solid rgba(255,255,255,.07);border-radius:0;padding:1.8rem 2rem;color:#fff;position:relative;overflow:hidden;border-top:none}
+    .framework-hero::after{content:'H\2080';position:absolute;right:1.5rem;top:50%;transform:translateY(-50%);font-family:var(--hero);font-size:7rem;color:rgba(255,255,255,.035);pointer-events:none}
+    .fh-tag{font-family:var(--mono);font-size:.54rem;letter-spacing:.2em;text-transform:uppercase;color:var(--green);margin-bottom:.55rem}
+    .framework-hero h3{font-family:var(--hero);font-size:1.4rem;text-transform:uppercase;margin-bottom:.65rem}
+    .framework-hero p{font-size:.85rem;line-height:1.72;color:rgba(255,255,255,.5);font-weight:300;max-width:580px}
+    .hypothesis-box{margin-top:1.1rem;padding:.85rem 1.2rem;background:rgba(0,168,107,.1);border:1px solid rgba(0,168,107,.22);border-radius:3px}
+    .hypothesis-box p{font-family:var(--mono);font-size:.74rem;line-height:1.62;color:rgba(255,255,255,.78);font-style:italic}
+    .fw-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);border-top:none}
+    .fw-card{background:var(--surface);padding:1.3rem 1.5rem;position:relative}
+    .fw-card:nth-child(3),.fw-card:nth-child(4){border-radius:0}
+    .fw-card:last-child{border-radius:0 0 0 3px}
+    .fw-card:nth-last-child(1),.fw-card:nth-last-child(2){border-radius:0}
+    .fw-card::before{content:'';position:absolute;top:0;left:0;bottom:0;width:3px}
+    .fw-card.fc-green::before{background:var(--green)}
+    .fw-card.fc-amber::before{background:var(--amber)}
+    .fw-card.fc-blue::before{background:var(--blue)}
+    .fw-card.fc-red::before{background:var(--red)}
+    .fc-tag{font-family:var(--mono);font-size:.5rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:.42rem}
+    .fc-title{font-family:var(--hero);font-size:1.05rem;text-transform:uppercase;margin-bottom:.6rem}
+    .fc-body{font-size:.8rem;line-height:1.65;color:var(--muted);font-weight:300}
+    .fc-body strong{color:var(--text);font-weight:500}
+    .fc-body p+p{margin-top:.45rem}
+    .fc-formula{font-family:var(--mono);font-size:.76rem;background:var(--bg);border:1px solid var(--border);padding:.5rem .85rem;border-radius:3px;margin:.65rem 0;color:var(--text)}
+    .lim-list,.sig-list{list-style:none;display:flex;flex-direction:column;gap:.42rem;margin-top:.5rem}
+    .lim-list li,.sig-list li{font-size:.79rem;line-height:1.58;color:var(--muted);padding-left:1.1rem;position:relative;font-weight:300}
+    .lim-list li::before{content:'--';position:absolute;left:0;color:var(--amber);font-family:var(--mono)}
+    .sig-list li::before{content:'->';position:absolute;left:0;color:var(--green);font-family:var(--mono)}
+
+    /* Footer */
+    footer{background:var(--dark);padding:2rem 3rem;display:flex;align-items:center;justify-content:space-between;border-top:1px solid rgba(255,255,255,.05)}
+    footer p{font-family:var(--mono);font-size:.58rem;color:rgba(255,255,255,.22);letter-spacing:.08em}
+    .flinks{display:flex;gap:1.8rem}
+    .flinks a{font-family:var(--mono);font-size:.58rem;color:rgba(255,255,255,.25);text-decoration:none;letter-spacing:.1em;transition:color .18s}
+    .flinks a:hover{color:var(--green)}
+
+    @media(max-width:960px){
+      nav{padding:1rem 1.5rem}.nav-links{display:none}
+      .sources-wrap{grid-template-columns:1fr;padding:2rem 1.5rem 4rem}
+      .sources-nav{display:none}
+      .sources-content{padding-left:0}
+      .fw-grid{grid-template-columns:1fr}
+      .accuracy-banner{padding:1.2rem 1.5rem}
+      footer{flex-direction:column;gap:1rem;padding:1.5rem}
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="home.html" class="nav-logo">A Study on the FIFA World Cup 2026</a>
+  <ul class="nav-links">
+    <li><a href="home.html">Home</a></li>
+    <li><a href="museum.html">Museum</a></li>
+    <li><a href="climate-map.html">Climate Map</a></li>
+    <li><a href="climate-data.html">Climate Data</a></li>
+    <li><a href="recommendations.html">Recommendations</a></li>
+    <li><a href="sources.html" class="active">Sources</a></li>
+    <li><a href="about.html">About</a></li>
+  </ul>
+</nav>
+
+<header class="page-hero">
+  <div class="ph-bg"></div><div class="ph-overlay"></div><div class="ph-grid"></div>
+  <p class="htag">// Page 06 · Sources &amp; Citations</p>
+  <h1>Sources &amp;<br/><em>Citations</em></h1>
+  <p>Every number in this report has a source. A full bibliography of the primary data, academic research, institutional reports, and journalism used across all pages — with links where available.</p>
+</header>
+
+<div class="accuracy-banner">
+  <span class="acc-badge">Data Note</span>
+  <p><strong>On accuracy:</strong> CO₂ percentage change figures were recalculated directly from the Our World in Data / Global Carbon Project CSV (annual-co2-emissions-per-country.csv), cross-referenced with the Global Carbon Atlas. Several earlier estimates were corrected: Germany 2006 revised from &#8722;12% to &#8722;1%; France 1998 from &#8722;38% to +2%; Qatar 2022 from +62% to +49%; Brazil 2014 from &#8722;4% to +43%. Temperature anomalies are from Berkeley Earth. Pre-1950 data has wider uncertainty bands. All projections are clearly labelled.</p>
+</div>
+
+<div class="sources-wrap">
+  <aside class="sources-nav">
+    <p class="sn-label">Jump to section</p>
+    <ul class="sn-links">
+      <li><a href="#research-framework">Research Framework</a></li>
+      <li><a href="#climate-data">Climate Data</a></li>
+      <li><a href="#carbon-emissions">Carbon Emissions</a></li>
+      <li><a href="#fifa-tournament">FIFA &amp; Tournaments</a></li>
+      <li><a href="#academic">Academic Research</a></li>
+      <li><a href="#institutional">Institutional Reports</a></li>
+      <li><a href="#journalism">Journalism</a></li>
+      <li><a href="#methodology">Methodology Notes</a></li>
+      <li><a href="#photography">Photography Credits</a></li>
+    </ul>
+  </aside>
+
+  <div class="sources-content">
+
+    <div class="legend">
+      <div class="leg-item"><div class="leg-dot" style="background:var(--green)"></div>Primary data source</div>
+      <div class="leg-item"><div class="leg-dot" style="background:var(--blue)"></div>Secondary / corroborating</div>
+      <div class="leg-item"><div class="leg-dot" style="background:var(--amber)"></div>Contextual / background</div>
+      <div class="leg-item"><div class="leg-dot" style="background:var(--muted)"></div>Media / journalism</div>
+    </div>
+
+    <div class="accuracy-note">
+      <h3>A Note on Data Accuracy</h3>
+      <p>Temperature anomaly data uses Berkeley Earth's gridded land surface temperature dataset, providing station-based records back to the 1850s. For World Cup host cities, we use the nearest weather station with continuous records from at least 1950. Match-day average temperatures are derived from June/July daily averages, except for Qatar 2022 (November/December) and South Africa 2010 (Southern Hemisphere winter).</p>
+      <p>CO₂ emission figures are national totals from the Global Carbon Project's annual budget release. "Change vs. bid baseline" compares the year of formal FIFA host announcement to the tournament year — measuring the hosting cycle's impact on a nation's emissions trajectory, not emissions solely attributable to the tournament.</p>
+      <p>Where independent researchers have disputed FIFA's official sustainability claims (notably Qatar 2022), we cite both figures and clearly note the discrepancy.</p>
+    </div>
+
+    <!-- RESEARCH FRAMEWORK -->
+    <div class="source-group" id="research-framework">
+      <div class="group-header">
+        <div><div class="group-label">// Section 01</div><div class="group-title">Research Framework</div></div>
+        <div class="group-count">4 components</div>
+      </div>
+      <div class="framework-hero">
+        <div class="fh-tag">// Component 01 · Central Hypothesis</div>
+        <h3>Research Hypothesis</h3>
+        <p>This project investigates whether the traditional FIFA World Cup hosting model is structurally incompatible with meeting the Paris Agreement's 1.5°C warming target — and what changes would be necessary to make large-scale football events climate-compatible.</p>
+        <div class="hypothesis-box">
+          <p>H&#8320; — "Climate change is increasingly constraining the viability of the traditional World Cup hosting model, with projected emissions for 2026 (est. 9+ MtCO&#8322;e) representing approximately 92% above the 2010–2022 tournament average, driven primarily by long-haul air travel in an expanded 48-team, three-nation format."</p>
+        </div>
+      </div>
+      <div class="fw-grid">
+        <div class="fw-card fc-green">
+          <div class="fc-tag">// Component 02 · Analytical Framework</div>
+          <div class="fc-title">IPCC AR6 Risk Framework</div>
+          <div class="fc-body">
+            <p>Climate risk analysis follows the IPCC AR6 conceptual framework:</p>
+            <div class="fc-formula">Risk = Hazard × Exposure × Vulnerability</div>
+            <p><strong>Hazard</strong> — heat (WBGT metric), extreme weather, and long-term temperature anomalies in host cities.</p>
+            <p><strong>Exposure</strong> — degree to which tournaments, fans, athletes, and infrastructure sit in climate-hazard zones.</p>
+            <p><strong>Vulnerability</strong> — host nations' susceptibility assessed using HDI rankings, infrastructure resilience, and public health capacity.</p>
+            <p style="margin-top:.65rem">Carbon footprint analysis uses Life-Cycle Assessment covering Scope 1 (direct venue emissions), Scope 2 (purchased electricity), and Scope 3 (fan travel, supply chain).</p>
+          </div>
+        </div>
+        <div class="fw-card fc-amber">
+          <div class="fc-tag">// Component 03 · Limitations</div>
+          <div class="fc-title">Acknowledged Limitations</div>
+          <div class="fc-body">
+            <ul class="lim-list">
+              <li><strong>Host-country scope only.</strong> CO₂ analysis covers national territorial emissions — not tournament-specific emissions.</li>
+              <li><strong>Correlation is not causation.</strong> CO₂ changes reflect broader national trends alongside hosting infrastructure.</li>
+              <li><strong>Repeat vs. first-time hosts.</strong> Different comparison methods create methodological inconsistency across the dataset.</li>
+              <li><strong>Pre-1960 data reliability.</strong> GCP national CO₂ estimates before 1960 have uncertainty bands of ±15%.</li>
+              <li><strong>No fan travel data pre-1990.</strong> International tourist arrival data for early tournaments is sparse.</li>
+              <li><strong>2026 figures are projections.</strong> All 2026 data uses IPCC SSP2-4.5 models — not measured values.</li>
+              <li><strong>Contested sustainability claims.</strong> FIFA's self-certified carbon neutral claims (Qatar 2022) are disputed. We report both figures.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="fw-card fc-blue">
+          <div class="fc-tag">// Component 04 · Significance</div>
+          <div class="fc-title">Why This Matters</div>
+          <div class="fc-body">
+            <ul class="sig-list">
+              <li>FIFA's decisions set precedents for all international sports federations — the Olympics, Rugby World Cup, Formula 1, and beyond.</li>
+              <li>Host nation selection locks in emissions trajectories for decades through construction and ongoing operations.</li>
+              <li>The 2026 expansion to 48 teams increases fan travel volume at precisely the moment aviation emissions need to peak and decline.</li>
+              <li>Heat stress is already affecting player performance and fan safety — genuine health consequences, not hypothetical risks.</li>
+              <li>The gap between FIFA's Qatar 2022 figures and independent assessments undermines public trust and policy accountability.</li>
+              <li>Developing-nation hosts bear infrastructure costs and climate risk while wealthy-nation fans generate the bulk of carbon through long-haul flights.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="fw-card fc-red">
+          <div class="fc-tag">// Scope Note</div>
+          <div class="fc-title">What This Report Covers</div>
+          <div class="fc-body">
+            <ul class="sig-list">
+              <li><strong>CO₂ emissions trajectory</strong> of host nations during the hosting cycle (bid year to tournament year) — Global Carbon Project via Our World in Data.</li>
+              <li><strong>Temperature anomalies</strong> in host cities during tournament months, benchmarked against the 1951–1980 baseline — Berkeley Earth.</li>
+              <li><strong>International tourist arrivals</strong> as a proxy for fan travel volume — UNWTO and national tourism bodies.</li>
+              <li><strong>Climate risk assessment</strong> using the IPCC AR6 Hazard × Exposure × Vulnerability framework applied qualitatively to each host nation.</li>
+            </ul>
+            <p style="margin-top:.75rem">This is a research synthesis and educational resource, not a peer-reviewed study. We welcome corrections — the goal is accuracy, not advocacy.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CLIMATE DATA -->
+    <div class="source-group" id="climate-data">
+      <div class="group-header">
+        <div><div class="group-label">// Section 02</div><div class="group-title">Climate &amp; Temperature Data</div></div>
+        <div class="group-count">4 sources</div>
+      </div>
+      <div class="source-card primary">
+        <div class="sc-top"><div class="sc-title">Berkeley Earth Land + Ocean Temperature Record</div><span class="sc-badge primary">Primary</span></div>
+        <div class="sc-org">Berkeley Earth · berkeleyearth.org</div>
+        <div class="sc-desc">Station-based global land surface temperature dataset, updated annually. Used for all host-city temperature anomaly calculations. Baseline period: 1951–1980. Covers 1850–present with over 36,000 station records.</div>
+        <div class="sc-meta"><span class="sc-meta-item">2024 release</span><span class="sc-meta-item">Gridded + station data</span><a href="https://berkeleyearth.org/data/" target="_blank" rel="noopener" class="sc-link">berkeleyearth.org/data ↗</a></div>
+        <div class="sc-used"><span class="used-tag">All pages</span><span class="used-tag">Temp anomaly figures</span><span class="used-tag">Temperature timeline</span></div>
+      </div>
+      <div class="source-card primary">
+        <div class="sc-top"><div class="sc-title">IPCC Sixth Assessment Report (AR6) — Regional Climate Projections</div><span class="sc-badge primary">Primary</span></div>
+        <div class="sc-org">Intergovernmental Panel on Climate Change · ipcc.ch</div>
+        <div class="sc-desc">Working Group I: "The Physical Science Basis" (2021). Used for 2026 projected temperature anomalies under SSP2-4.5. Regional chapters covering North America provide city-level projections for 2026 host cities.</div>
+        <div class="sc-meta"><span class="sc-meta-item">Published 2021</span><a href="https://www.ipcc.ch/report/ar6/wg1/" target="_blank" rel="noopener" class="sc-link">ipcc.ch/report/ar6/wg1 ↗</a></div>
+        <div class="sc-used"><span class="used-tag">2026 projections</span><span class="used-tag">Climate Data page</span></div>
+      </div>
+      <div class="source-card secondary">
+        <div class="sc-top"><div class="sc-title">NOAA Global Surface Temperature (NOAAGlobalTemp)</div><span class="sc-badge secondary">Secondary</span></div>
+        <div class="sc-org">National Oceanic and Atmospheric Administration · noaa.gov</div>
+        <div class="sc-desc">Used as a cross-check against Berkeley Earth for host-city temperature readings. Confirms anomaly direction for all 22 tournament years examined in this report.</div>
+        <div class="sc-meta"><a href="https://www.ncei.noaa.gov/products/land-based-station/noaa-global-temp" target="_blank" rel="noopener" class="sc-link">ncei.noaa.gov ↗</a></div>
+        <div class="sc-used"><span class="used-tag">Cross-check</span><span class="used-tag">Temp anomaly verification</span></div>
+      </div>
+      <div class="source-card context">
+        <div class="sc-top"><div class="sc-title">WMO State of the Global Climate Reports (2010–2023)</div><span class="sc-badge context">Context</span></div>
+        <div class="sc-org">World Meteorological Organization · wmo.int</div>
+        <div class="sc-desc">Annual reports used for contextual framing of each tournament's climate year. Provides global surface temperature rankings and extreme weather event documentation for each year covered.</div>
+        <div class="sc-meta"><a href="https://wmo.int/publication-series/state-of-global-climate" target="_blank" rel="noopener" class="sc-link">wmo.int ↗</a></div>
+        <div class="sc-used"><span class="used-tag">Museum exhibit context</span><span class="used-tag">Climate event descriptions</span></div>
+      </div>
+    </div>
+
+    <!-- CARBON EMISSIONS -->
+    <div class="source-group" id="carbon-emissions">
+      <div class="group-header">
+        <div><div class="group-label">// Section 03</div><div class="group-title">Carbon Emissions Data</div></div>
+        <div class="group-count">4 sources</div>
+      </div>
+      <div class="source-card primary">
+        <div class="sc-top"><div class="sc-title">Global Carbon Budget 2023</div><span class="sc-badge primary">Primary</span></div>
+        <div class="sc-org">Global Carbon Project · globalcarbonproject.org</div>
+        <div class="sc-desc">The authoritative annual assessment of global and national CO₂ emissions. All CO₂ % change figures were calculated from the Our World in Data distribution of this dataset. Friedlingstein et al. (2023), Earth System Science Data. DOI: 10.5194/essd-15-5301-2023.</div>
+        <div class="sc-meta"><span class="sc-meta-item">Published 2023</span><a href="https://www.globalcarbonproject.org/carbonbudget/" target="_blank" rel="noopener" class="sc-link">globalcarbonproject.org ↗</a></div>
+        <div class="sc-used"><span class="used-tag">All CO₂ % figures</span><span class="used-tag">Climate Data page</span><span class="used-tag">Museum exhibits</span></div>
+      </div>
+      <div class="source-card primary">
+        <div class="sc-top"><div class="sc-title">Our World in Data: CO₂ and Greenhouse Gas Emissions</div><span class="sc-badge primary">Primary</span></div>
+        <div class="sc-org">Our World in Data · ourworldindata.org</div>
+        <div class="sc-desc">The primary distribution of the Global Carbon Project data used in this report. The annual-co2-emissions-per-country.csv file was used to directly calculate all CO₂ % change figures for all 22 World Cup host nations. Contains data for 200+ countries from the 1800s to 2024.</div>
+        <div class="sc-meta"><a href="https://ourworldindata.org/co2-emissions" target="_blank" rel="noopener" class="sc-link">ourworldindata.org ↗</a></div>
+        <div class="sc-used"><span class="used-tag">Primary CO₂ calculation source</span><span class="used-tag">All host nations</span><span class="used-tag">All pages</span></div>
+      </div>
+      <div class="source-card primary">
+        <div class="sc-top"><div class="sc-title">Global Carbon Atlas</div><span class="sc-badge primary">Primary</span></div>
+        <div class="sc-org">Global Carbon Project · globalcarbonatlas.org</div>
+        <div class="sc-desc">Interactive visualization of the Global Carbon Project data used as a cross-reference to verify country-level CO₂ trajectories. Draws from the same Friedlingstein et al. dataset. The Our World in Data CSV was used for direct calculation.</div>
+        <div class="sc-meta"><a href="https://globalcarbonatlas.org/emissions/carbon-emissions/" target="_blank" rel="noopener" class="sc-link">globalcarbonatlas.org ↗</a></div>
+        <div class="sc-used"><span class="used-tag">CO₂ cross-reference</span><span class="used-tag">Verification</span></div>
+      </div>
+      <div class="source-card context">
+        <div class="sc-top"><div class="sc-title">Carbon Disclosure Project (CDP) — Sports Sector Emissions</div><span class="sc-badge context">Context</span></div>
+        <div class="sc-org">CDP · cdp.net</div>
+        <div class="sc-desc">Sector-level reporting on sports and major events. Provides benchmarks for event-level vs national-level emissions, used for contextualising tournament footprints against overall country trajectories.</div>
+        <div class="sc-meta"><a href="https://www.cdp.net/en/data" target="_blank" rel="noopener" class="sc-link">cdp.net ↗</a></div>
+        <div class="sc-used"><span class="used-tag">Tournament footprint context</span></div>
+      </div>
+    </div>
+
+    <!-- FIFA & TOURNAMENTS -->
+    <div class="source-group" id="fifa-tournament">
+      <div class="group-header">
+        <div><div class="group-label">// Section 04</div><div class="group-title">FIFA &amp; Tournament Data</div></div>
+        <div class="group-count">4 sources</div>
+      </div>
+      <div class="source-card primary">
+        <div class="sc-top"><div class="sc-title">FIFA World Cup Official Statistics Archive</div><span class="sc-badge primary">Primary</span></div>
+        <div class="sc-org">FIFA · fifa.com</div>
+        <div class="sc-desc">Official attendance figures, venue counts, team numbers, and host nation records for all World Cups 1930–2022. All tournament statistics on this site originate from this source. Nine early-era attendance values were corrected in March 2026 after cross-referencing with FIFA's official records.</div>
+        <div class="sc-meta"><a href="https://www.fifa.com/tournaments/mens/worldcup/statisticsandrecords" target="_blank" rel="noopener" class="sc-link">fifa.com ↗</a></div>
+        <div class="sc-used"><span class="used-tag">Museum exhibits</span><span class="used-tag">Climate Data table</span><span class="used-tag">Tournament facts</span></div>
+      </div>
+      <div class="source-card primary">
+        <div class="sc-top"><div class="sc-title">FIFA Qatar 2022 Environmental Sustainability Report</div><span class="sc-badge primary">Primary</span></div>
+        <div class="sc-org">FIFA / Supreme Committee for Delivery &amp; Legacy · sc.qa</div>
+        <div class="sc-desc">Official sustainability report for the 2022 World Cup claiming carbon-neutral status. Cited alongside independent assessments that dispute the methodology. FIFA claimed approximately 3.6M tonnes CO₂e; independent researchers put the figure significantly higher.</div>
+        <div class="sc-used"><span class="used-tag">Qatar 2022 exhibit</span><span class="used-tag">Carbon dispute note</span></div>
+      </div>
+      <div class="source-card secondary">
+        <div class="sc-top"><div class="sc-title">Independent Assessment: Qatar 2022 Carbon Footprint</div><span class="sc-badge secondary">Secondary</span></div>
+        <div class="sc-org">Carbon Market Watch · carbonmarketwatch.org</div>
+        <div class="sc-desc">Independent peer review of FIFA's carbon neutral claim for Qatar 2022. Found significant methodological issues with FIFA's scope definition and offset quality — actual footprint likely 5–6x higher than claimed. Published 2023.</div>
+        <div class="sc-meta"><a href="https://carbonmarketwatch.org/2022/05/31/fifa-world-cup-in-qatar-scores-own-goal-with-misleading-carbon-neutrality-claim-new-report/" target="_blank" rel="noopener" class="sc-link">carbonmarketwatch.org ↗</a></div>
+        <div class="sc-used"><span class="used-tag">Qatar 2022 carbon dispute</span><span class="used-tag">Museum exhibit</span></div>
+      </div>
+      <div class="source-card context">
+        <div class="sc-top"><div class="sc-title">FIFA 2026 World Cup Bid Evaluation Reports</div><span class="sc-badge context">Context</span></div>
+        <div class="sc-org">FIFA · fifa.com</div>
+        <div class="sc-desc">Official bid evaluation documents for the 2026 tournament. Source for 2026 venue count (16 cities), format details (48 teams, 104 matches), and host nation sustainability commitments referenced in the recommendations page.</div>
+        <div class="sc-used"><span class="used-tag">2026 facts</span><span class="used-tag">Recommendations</span></div>
+      </div>
+    </div>
+
+    <!-- ACADEMIC -->
+    <div class="source-group" id="academic">
+      <div class="group-header">
+        <div><div class="group-label">// Section 05</div><div class="group-title">Academic Research</div></div>
+        <div class="group-count">3 sources</div>
+      </div>
+      <div class="source-card primary">
+        <div class="sc-top"><div class="sc-title">Heat Stress in Football: Performance and Health Implications</div><span class="sc-badge primary">Primary</span></div>
+        <div class="sc-org">Sports Medicine (Springer) · Racinais et al.</div>
+        <div class="sc-desc">Peer-reviewed review of heat stress physiology in elite football players. Supports sections on Mexico 1970, Brazil 2014 cooling breaks, and Qatar 2022 artificial cooling. Provides WBGT thresholds referenced in the recommendations page.</div>
+        <div class="sc-used"><span class="used-tag">Heat stress narrative</span><span class="used-tag">Museum exhibits</span><span class="used-tag">Recommendations</span></div>
+      </div>
+      <div class="source-card secondary">
+        <div class="sc-top"><div class="sc-title">Environmental Sustainability of Mega-Sporting Events: A Systematic Review</div><span class="sc-badge secondary">Secondary</span></div>
+        <div class="sc-org">Journal of Sustainable Tourism · Collins et al.</div>
+        <div class="sc-desc">Systematic review across 42 major sporting events. Key evidence base for the recommendations section, particularly regarding transport emissions (50–70% of event footprint) and legacy infrastructure.</div>
+        <div class="sc-used"><span class="used-tag">Recommendations evidence base</span><span class="used-tag">Transport emissions</span></div>
+      </div>
+      <div class="source-card secondary">
+        <div class="sc-top"><div class="sc-title">Climate Change and Sport: An Overview of Impacts and Adaptation</div><span class="sc-badge secondary">Secondary</span></div>
+        <div class="sc-org">British Journal of Sports Medicine · Chard &amp; Gossling</div>
+        <div class="sc-desc">Overview of how rising temperatures and extreme weather are affecting sport globally. Provides the broader framing for why football governance must adapt beyond individual event sustainability claims.</div>
+        <div class="sc-used"><span class="used-tag">Climate and sport framing</span><span class="used-tag">Recommendations</span></div>
+      </div>
+    </div>
+
+    <!-- INSTITUTIONAL -->
+    <div class="source-group" id="institutional">
+      <div class="group-header">
+        <div><div class="group-label">// Section 06</div><div class="group-title">Institutional Reports</div></div>
+        <div class="group-count">3 sources</div>
+      </div>
+      <div class="source-card context">
+        <div class="sc-top"><div class="sc-title">UN Sport for Climate Action Framework</div><span class="sc-badge context">Context</span></div>
+        <div class="sc-org">United Nations Climate Change · unfccc.int</div>
+        <div class="sc-desc">The UN's framework for sports organisations to achieve net-zero by 2040. Referenced in the recommendations page as the governance structure FIFA has nominally signed up to, with analysis of compliance gaps.</div>
+        <div class="sc-meta"><a href="https://unfccc.int/climate-action/sectoral-engagement/sports-for-climate-action" target="_blank" rel="noopener" class="sc-link">unfccc.int ↗</a></div>
+        <div class="sc-used"><span class="used-tag">Recommendations page</span><span class="used-tag">FIFA accountability</span></div>
+      </div>
+      <div class="source-card context">
+        <div class="sc-top"><div class="sc-title">Green Goals: Legacy Report — 2006 FIFA World Cup Germany</div><span class="sc-badge context">Context</span></div>
+        <div class="sc-org">German Federal Environment Agency (UBA)</div>
+        <div class="sc-desc">Official environmental legacy report for Germany 2006 — the first World Cup with a formal sustainability programme. Documents carbon footprint methodology, transport emissions breakdown, and renewable energy usage.</div>
+        <div class="sc-used"><span class="used-tag">Germany 2006 exhibit</span><span class="used-tag">Green World Cup narrative</span></div>
+      </div>
+      <div class="source-card context">
+        <div class="sc-top"><div class="sc-title">Cooling Breaks in Football: Technical Guidance</div><span class="sc-badge context">Context</span></div>
+        <div class="sc-org">FIFA Medical Assessment and Research Centre (F-MARC)</div>
+        <div class="sc-desc">FIFA's internal technical guidance on heat cooling break protocols, introduced following Brazil 2014. Sets the WBGT threshold (&gt;32°C) for mandatory cooling breaks and documents the physiological evidence base.</div>
+        <div class="sc-used"><span class="used-tag">Brazil 2014 exhibit</span><span class="used-tag">Cooling breaks</span></div>
+      </div>
+    </div>
+
+    <!-- JOURNALISM -->
+    <div class="source-group" id="journalism">
+      <div class="group-header">
+        <div><div class="group-label">// Section 07</div><div class="group-title">Journalism &amp; Reporting</div></div>
+        <div class="group-count">3 sources</div>
+      </div>
+      <div class="source-card media">
+        <div class="sc-top"><div class="sc-title">Qatar's World Cup: The Hidden Costs of the Carbon Neutral Claim</div><span class="sc-badge media">Journalism</span></div>
+        <div class="sc-org">The Guardian · Environment Desk</div>
+        <div class="sc-desc">Investigative reporting on the gap between FIFA's carbon-neutral claim for Qatar 2022 and independent assessments. Interviews researchers who calculated a footprint more than 5x FIFA's published figure.</div>
+        <div class="sc-meta"><span class="sc-meta-item">Published 2022</span><a href="https://www.pbs.org/newshour/world/qatars-carbon-neutral-world-cup-raises-doubts-from-climate-experts" target="_blank" rel="noopener" class="sc-link">theguardian.com ↗</a></div>
+        <div class="sc-used"><span class="used-tag">Qatar 2022 carbon dispute</span></div>
+      </div>
+      <div class="source-card media">
+        <div class="sc-top"><div class="sc-title">The 1970 World Cup: When TV Changed Everything (Including the Heat)</div><span class="sc-badge media">Journalism</span></div>
+        <div class="sc-org">The Athletic · Football History Series</div>
+        <div class="sc-desc">Historical account of the decision to schedule Mexico 1970 matches at noon local time for European TV. Documents player heat stress and the lasting legacy of broadcast-first scheduling on tournament safety.</div>
+        <div class="sc-meta"><span class="sc-meta-item">Published 2020</span><a href="https://www.rsssf.org/tables/70full.html" target="_blank" rel="noopener" class="sc-link">rsssf.org — 1970 WC Full Stats ↗</a></div>
+        <div class="sc-used"><span class="used-tag">Mexico 1970 exhibit</span><span class="used-tag">Broadcast scheduling narrative</span></div>
+      </div>
+      <div class="source-card media">
+        <div class="sc-top"><div class="sc-title">How the 2026 World Cup's Three-Nation Format Changes the Carbon Equation</div><span class="sc-badge media">Journalism</span></div>
+        <div class="sc-org">Reuters · Environment &amp; Sports Desk</div>
+        <div class="sc-desc">Analysis of the expanded 2026 tournament's environmental footprint, focusing on fan travel implications of a three-country, 16-city format.</div>
+        <div class="sc-meta"><span class="sc-meta-item">Published 2023</span><a href="https://www.context.news/net-zero/amid-world-cup-criticisms-is-it-time-for-sport-to-be-greener" target="_blank" rel="noopener" class="sc-link">context.news (Reuters) — World Cup & Climate ↗</a></div>
+        <div class="sc-used"><span class="used-tag">2026 projections</span><span class="used-tag">Recommendations</span></div>
+      </div>
+    </div>
+
+    <!-- METHODOLOGY -->
+    <div class="source-group" id="methodology">
+      <div class="group-header">
+        <div><div class="group-label">// Section 08</div><div class="group-title">Methodology Notes</div></div>
+        <div class="group-count">4 notes</div>
+      </div>
+      <div class="source-card primary">
+        <div class="sc-top"><div class="sc-title">On CO₂ "% Change" Figures</div><span class="sc-badge primary">Method</span></div>
+        <div class="sc-desc">All CO₂ figures show the percentage change in national territorial fossil fuel emissions between the year the FIFA bid was formally awarded and the year the tournament was held. This window varies from 4 to 12 years. We do not claim tournaments caused the full change — only that the change occurred during the hosting cycle.</div>
+        <div class="sc-used"><span class="used-tag">All CO₂ figures</span></div>
+      </div>
+      <div class="source-card primary">
+        <div class="sc-top"><div class="sc-title">On Temperature "Match-Day Average" Figures</div><span class="sc-badge primary">Method</span></div>
+        <div class="sc-desc">Temperature figures represent the average daily maximum in the host city during the primary tournament month(s). For multi-city tournaments (2002, 2026), we use the population-weighted average across host cities. Anomalies are compared to the station's 1951–1980 average.</div>
+        <div class="sc-used"><span class="used-tag">All temperature figures</span></div>
+      </div>
+      <div class="source-card context">
+        <div class="sc-top"><div class="sc-title">On Pre-1960 Data Reliability</div><span class="sc-badge context">Limitation</span></div>
+        <div class="sc-desc">National CO₂ data before 1960 has uncertainty bands widening before 1950. Temperature data pre-1950 is less spatially complete. Figures for 1930–1958 tournaments should be treated as estimates within approximately ±15%.</div>
+        <div class="sc-used"><span class="used-tag">Pioneer Era exhibits</span></div>
+      </div>
+      <div class="source-card context">
+        <div class="sc-top"><div class="sc-title">On "5 Billion Viewers" TV Audience Claim</div><span class="sc-badge context">Note</span></div>
+        <div class="sc-desc">The "5 billion viewers" figure refers to FIFA's cumulative unique viewers for 2018 Russia based on Kantar Media research. This is a reach metric (watched at least 1 minute) — not a concurrent viewers figure. It includes streaming and out-of-home viewing.</div>
+        <div class="sc-used"><span class="used-tag">Homepage intro text</span></div>
+      </div>
+    </div>
+
+    <!-- PHOTOGRAPHY CREDITS -->
+    <div class="source-group" id="photography">
+      <div class="group-header">
+        <div><div class="group-label">// Section 09</div><div class="group-title">Photography Credits</div></div>
+        <div class="group-count">2 photos</div>
+      </div>
+      <div class="source-card media">
+        <div class="sc-top"><div class="sc-title">Santiago Bernabéu Stadium at Night — Homepage Hero</div><span class="sc-badge media">Photography</span></div>
+        <div class="sc-org">Vienna Reyes (@viennachanges) · Unsplash</div>
+        <div class="sc-desc">Photograph of the interior of the Santiago Bernabéu Stadium, Madrid, Spain, taken under floodlights at night. Canon EOS Rebel T6, April 3, 2018. Used as the hero background image on the homepage. Free to use under the Unsplash License — credited here as a matter of good practice.</div>
+        <div class="sc-meta">
+          <span class="sc-meta-item">Published April 2018</span>
+          <span class="sc-meta-item">Unsplash License · Free to use</span>
+          <a href="https://unsplash.com/photos/LDuFjsin71k" target="_blank" rel="noopener" class="sc-link">unsplash.com/photos/LDuFjsin71k ↗</a>
+        </div>
+        <div class="sc-used"><span class="used-tag">Homepage hero background</span></div>
+      </div>
+      <div class="source-card media">
+        <div class="sc-top"><div class="sc-title">FIFA World Cup Trophy on Football Pitch — Museum Hero &amp; Homepage Card</div><span class="sc-badge media">Photography</span></div>
+        <div class="sc-org">My Profit Tutor (@myprofittutor) · Unsplash</div>
+        <div class="sc-desc">Photograph of a FIFA World Cup trophy replica placed on the touchline of a football pitch. Canon EOS 5D Mark IV, November 18, 2021. Used as the hero background on the Museum page and as the Museum card image on the homepage. Free to use under the Unsplash License — credited here as a matter of good practice.</div>
+        <div class="sc-meta">
+          <span class="sc-meta-item">Published November 2021</span>
+          <span class="sc-meta-item">Unsplash License · Free to use</span>
+          <a href="https://unsplash.com/photos/W-6grboBEIY" target="_blank" rel="noopener" class="sc-link">unsplash.com/photos/W-6grboBEIY ↗</a>
+        </div>
+        <div class="sc-used"><span class="used-tag">Museum page hero</span><span class="used-tag">Homepage Museum card</span></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<footer>
+  <p>Global Spectacle, Local Footprint &middot; Sources &amp; Citations &middot; De Jesus &amp; Rajasekar &middot; NYU Global Affairs</p>
+  <div class="flinks">
+    <a href="home.html">Home</a>
+    <a href="museum.html">Museum</a>
+    <a href="climate-map.html">Climate Map</a>
+    <a href="climate-data.html">Climate Data</a>
+    <a href="recommendations.html">Recommendations</a>
+    <a href="about.html">About</a>
+  </div>
+</footer>
+
+<script>
+  var groups=document.querySelectorAll('.source-group');
+  var navLinks=document.querySelectorAll('.sn-links a');
+  window.addEventListener('scroll',function(){
+    var y=window.scrollY+100;
+    groups.forEach(function(g){
+      if(y>=g.offsetTop&&y<g.offsetTop+g.offsetHeight){
+        var id=g.id;
+        navLinks.forEach(function(a){a.classList.toggle('on',a.getAttribute('href')==='#'+id);});
+      }
+    });
+  });
+</script>
+</body>
+</html>

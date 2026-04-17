@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Climate Map · WC Climate 2026</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#f5f7fa;--surface:#fff;--border:#dde3ec;
+      --green:#00a86b;--green-lt:#e6f7f1;--green-dk:#007a4d;
+      --red:#e8273a;--red-lt:#fdeaec;
+      --amber:#e07b00;--amber-lt:#fdf3e3;
+      --blue:#1a6fdb;--blue-lt:#e8f0fc;
+      --text:#0f1c2e;--muted:#6b7f99;
+      --dark:#0a1220;--gold:#c9a84c;
+      --hero:'Bebas Neue',sans-serif;
+      --body:'DM Sans',sans-serif;
+      --mono:'DM Mono',monospace;
+      --sidebar:340px;
+    }
+    html{scroll-behavior:smooth}
+    body{background:var(--bg);color:var(--text);font-family:var(--body);overflow-x:hidden}
+    nav{position:fixed;top:0;left:0;right:0;z-index:400;display:flex;align-items:center;justify-content:space-between;padding:1.1rem 3rem;background:rgba(10,18,32,.92);backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,.06)}
+    .nav-logo{font-family:var(--mono);font-size:.75rem;color:var(--green);letter-spacing:.12em;text-transform:uppercase;text-decoration:none}
+    .nav-links{display:flex;gap:2rem;list-style:none}
+    .nav-links a{font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.4);text-decoration:none;transition:color .2s;font-family:var(--mono)}
+    .nav-links a:hover{color:rgba(255,255,255,.8)}
+    .nav-links a.active{color:var(--green)}
+    .page-header{padding:6rem 3rem 2rem;background:var(--dark);position:relative;overflow:hidden;min-height:260px;display:flex;flex-direction:column;justify-content:flex-end}
+    .page-header .ph-bg{position:absolute;inset:0;background-image:url('https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=1600&auto=format&fit=crop&q=80');background-size:cover;background-position:center 40%;opacity:.28}
+    .page-header .ph-overlay{position:absolute;inset:0;background:linear-gradient(to top,var(--dark) 30%,rgba(10,18,32,.55) 70%,rgba(10,18,32,.3)),linear-gradient(90deg,rgba(10,18,32,.7) 40%,transparent)}
+    .page-header .grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.02) 1px,transparent 1px);background-size:60px 60px;pointer-events:none}
+    .htag{font-family:var(--mono);font-size:.68rem;letter-spacing:.22em;text-transform:uppercase;color:var(--green);margin-bottom:.8rem;position:relative}
+    .page-header h1{font-family:var(--hero);font-size:clamp(2.5rem,6vw,4.5rem);line-height:.95;text-transform:uppercase;color:#fff;position:relative}
+    .page-header h1 em{color:var(--green);font-style:normal}
+    .page-header p{margin-top:.8rem;max-width:560px;font-size:.88rem;line-height:1.7;color:rgba(255,255,255,.42);font-weight:300;position:relative}
+    .page-header .ph-heat-tag{position:absolute;top:5.5rem;right:3rem;font-family:var(--mono);font-size:.58rem;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.35);text-align:right;line-height:1.6;border-right:2px solid var(--red);padding-right:.8rem}
+    .insights{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border:1px solid var(--border)}
+    .ins{background:var(--surface);padding:1.2rem 1.6rem;position:relative;overflow:hidden}
+    .ins::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+    .ins.i1::before{background:var(--red)}.ins.i2::before{background:var(--green)}.ins.i3::before{background:var(--amber)}.ins.i4::before{background:var(--blue)}
+    .ins-label{font-family:var(--mono);font-size:.58rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:.4rem}
+    .ins-val{font-family:var(--hero);font-size:2rem;line-height:1}
+    .ins.i1 .ins-val{color:var(--red)}.ins.i2 .ins-val{color:var(--green)}.ins.i3 .ins-val{color:var(--amber)}.ins.i4 .ins-val{color:var(--blue)}
+    .ins-sub{font-size:.75rem;color:var(--muted);margin-top:.3rem;font-weight:300}
+
+    /* KEY FIX: true two-column grid — left fills, right is fixed 340px sidebar */
+    .main-wrap{display:grid;grid-template-columns:1fr var(--sidebar);min-height:calc(100vh - 180px)}
+    .left{padding:1.5rem 1.5rem 2rem 2rem;min-width:0;overflow:hidden}
+
+    .controls-row{display:flex;align-items:center;gap:1rem;margin-bottom:1rem;flex-wrap:wrap}
+    .map-mode-bar,.filter-bar{display:flex;align-items:center;gap:.4rem;flex-wrap:wrap}
+    .mode-label,.flabel{font-family:var(--mono);font-size:.58rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-right:.2rem}
+    .mbtn{padding:.28rem .7rem;border:1px solid var(--border);background:var(--surface);font-family:var(--mono);font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);cursor:pointer;border-radius:2px;transition:all .18s}
+    .mbtn:hover,.mbtn.on{background:var(--dark);color:var(--gold);border-color:var(--dark)}
+    .fbtn{padding:.28rem .7rem;border:1px solid var(--border);background:var(--surface);font-family:var(--mono);font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);cursor:pointer;border-radius:2px;transition:all .18s}
+    .fbtn:hover,.fbtn.on{background:var(--green);color:#fff;border-color:var(--green)}
+
+    .map-wrap{position:relative;background:#dbeafe;border:1px solid var(--border);border-radius:4px;overflow:hidden;height:460px;margin-bottom:1rem}
+    #map{width:100%;height:100%;display:block}
+    .map-tip{position:absolute;background:var(--text);color:#fff;padding:.4rem .7rem;font-family:var(--mono);font-size:.63rem;border-radius:2px;pointer-events:none;opacity:0;transition:opacity .12s;white-space:nowrap;z-index:20;line-height:1.5}
+    .map-legend{position:absolute;bottom:.6rem;left:.6rem;display:flex;gap:.6rem;background:rgba(255,255,255,.92);padding:.3rem .6rem;border-radius:3px;align-items:center}
+    .ldot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+    .ltext{font-family:var(--mono);font-size:.52rem;color:var(--muted)}
+    .map-ctrls{position:absolute;top:.6rem;right:.6rem;display:flex;flex-direction:column;gap:.3rem;z-index:20}
+    .mc{width:26px;height:26px;border:1px solid var(--border);background:rgba(255,255,255,.95);border-radius:3px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:700;color:var(--text);transition:all .15s;font-family:var(--mono)}
+    .mc:hover{background:var(--green);color:#fff;border-color:var(--green)}
+    .mc.sm{font-size:.5rem}
+    .map-load{display:flex;align-items:center;justify-content:center;height:100%;flex-direction:column;gap:.5rem;font-family:var(--mono);font-size:.75rem;color:var(--muted)}
+    .scale-wrap{display:none;align-items:center;gap:.8rem;margin-bottom:.8rem;padding:.55rem .9rem;background:var(--surface);border:1px solid var(--border);border-radius:3px}
+    .scale-label{font-family:var(--mono);font-size:.55rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+    .scale-bar{flex:1;height:10px;border-radius:2px}
+    .scale-ticks{display:flex;justify-content:space-between;font-family:var(--mono);font-size:.46rem;color:var(--muted);margin-top:.2rem}
+
+    /* TIMELINE — always shows all nodes via horizontal scroll */
+    .tl-wrap{margin-bottom:1rem}
+    .sec-head{font-family:var(--mono);font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:.7rem;display:flex;align-items:center;gap:.6rem}
+    .sec-head::after{content:'';flex:1;height:1px;background:var(--border)}
+    .tl-hint{font-size:.52rem;color:var(--green);font-family:var(--mono);letter-spacing:.05em}
+    .tl-scroll{overflow-x:auto;padding-bottom:.5rem;scrollbar-width:thin;scrollbar-color:var(--green) var(--border)}
+    .tl-scroll::-webkit-scrollbar{height:4px}
+    .tl-scroll::-webkit-scrollbar-track{background:var(--border);border-radius:2px}
+    .tl-scroll::-webkit-scrollbar-thumb{background:var(--green);border-radius:2px}
+    .tl-track{display:flex;position:relative;padding:.7rem 0 .3rem;min-width:max-content}
+    .tl-track::before{content:'';position:absolute;top:1.55rem;left:0;right:0;height:2px;background:var(--border)}
+    .tl-node{display:flex;flex-direction:column;align-items:center;padding:0 .65rem;cursor:pointer;transition:transform .18s;user-select:none}
+    .tl-node:hover{transform:translateY(-3px)}
+    .tl-dot{width:12px;height:12px;border-radius:50%;border:2px solid var(--border);background:var(--surface);z-index:1;transition:all .18s;flex-shrink:0}
+    .tl-node:hover .tl-dot,.tl-node.sel .tl-dot{background:var(--green);border-color:var(--green);box-shadow:0 0 0 3px var(--green-lt)}
+    .tl-node.upcoming .tl-dot{border-color:var(--blue);background:var(--blue-lt)}
+    .tl-yr{margin-top:.3rem;font-family:var(--hero);font-size:.88rem;color:var(--text);white-space:nowrap}
+    .tl-node.sel .tl-yr{color:var(--green)}
+    .tl-fl{font-size:.72rem;margin-top:.08rem}
+    .tl-ho{font-size:.5rem;color:var(--muted);font-family:var(--mono);white-space:nowrap}
+
+    .stat-chips{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border:1px solid var(--border);margin-bottom:1rem}
+    .schip{background:var(--surface);padding:.85rem .7rem;text-align:center}
+    .schip-val{font-family:var(--hero);font-size:1.6rem;color:var(--green)}
+    .schip-label{font-family:var(--mono);font-size:.5rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-top:.15rem}
+
+    .cont-sec{margin-bottom:1rem}
+    .cont-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.45rem;margin-top:.6rem}
+    .cchip{background:var(--surface);border:1px solid var(--border);padding:.6rem .8rem;display:flex;align-items:center;gap:.6rem;border-radius:3px;cursor:pointer;transition:all .18s}
+    .cchip:hover,.cchip.on{border-color:var(--green);background:var(--green-lt)}
+    .cicon{font-size:1.2rem}.cname{font-weight:600;font-size:.78rem}
+    .ccount{font-family:var(--mono);font-size:.55rem;color:var(--muted)}
+
+    /* RIGHT PANEL — sticky column beside map, NOT full-screen fixed */
+    .right{
+      position:sticky;
+      top:64px;
+      height:calc(100vh - 64px);
+      overflow-y:auto;
+      background:var(--surface);
+      border-left:1px solid var(--border);
+      scrollbar-width:thin;
+      scrollbar-color:var(--border) transparent;
+    }
+    .right::-webkit-scrollbar{width:4px}
+    .right::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+
+    .rp-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:1rem;text-align:center;color:var(--muted);padding:2rem}
+    .rp-empty-icon{font-size:3rem;opacity:.28}
+    .rp-empty p{font-size:.8rem;line-height:1.6;max-width:180px}
+    #rp-detail{display:none}
+
+    /* sidebar card */
+    .rp-flag-header{width:100%;height:148px;position:relative;overflow:hidden;display:block}
+    .rp-flag-header img.rp-flag-img{width:100%;height:100%;object-fit:cover;display:block}
+    .rp-flag-header .rp-yr-bg{position:absolute;right:.4rem;bottom:-.6rem;font-family:var(--hero);font-size:5rem;line-height:1;color:rgba(255,255,255,.15);pointer-events:none;text-shadow:0 2px 12px rgba(0,0,0,.4)}
+    .rp-flag-header .rp-flag-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.35) 0%,transparent 60%)}
+    .rp-body{padding:1.1rem 1.2rem 2rem}
+    .rp-year{font-family:var(--hero);font-size:2.8rem;line-height:1;color:var(--green)}
+    .rp-host{font-size:.95rem;font-weight:600;color:var(--text);margin-top:.1rem}
+    .rp-cont{font-family:var(--mono);font-size:.56rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-top:.18rem}
+    .rp-div{height:1px;background:var(--border);margin:.85rem 0}
+    .rp-proj{display:inline-flex;align-items:center;gap:.3rem;background:var(--blue-lt);color:var(--blue);border:1px solid rgba(26,111,219,.2);padding:.22rem .55rem;border-radius:2px;font-family:var(--mono);font-size:.56rem;letter-spacing:.1em;text-transform:uppercase;margin-bottom:.6rem}
+    .rp-win{display:flex;align-items:center;gap:.65rem;background:var(--green-lt);border:1px solid rgba(0,168,107,.2);padding:.6rem .8rem;border-radius:3px;margin-bottom:.8rem}
+    .rp-trophy{font-size:1.1rem}
+    .rp-wlabel{font-family:var(--mono);font-size:.52rem;letter-spacing:.12em;text-transform:uppercase;color:var(--green)}
+    .rp-wname{font-weight:600;font-size:.83rem;color:var(--text)}
+    .rp-grid{display:grid;grid-template-columns:1fr 1fr;gap:.45rem;margin-bottom:.8rem}
+    .rp-stat{background:var(--bg);border:1px solid var(--border);padding:.6rem .7rem;border-radius:3px}
+    .rp-slabel{font-family:var(--mono);font-size:.5rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.18rem}
+    .rp-sval{font-family:var(--hero);font-size:1.15rem;line-height:1}
+    .rp-sval.up{color:var(--red)}.rp-sval.dn{color:var(--green)}.rp-sval.pj{color:var(--blue)}
+    .climate-badge{display:flex;align-items:center;gap:.5rem;padding:.6rem .8rem;border-radius:3px;margin-bottom:.8rem;border:1px solid}
+    .climate-badge.hot{background:var(--red-lt);border-color:rgba(232,39,58,.2);color:var(--red)}
+    .climate-badge.warm{background:var(--amber-lt);border-color:rgba(224,123,0,.2);color:var(--amber)}
+    .climate-badge.cool{background:var(--blue-lt);border-color:rgba(26,111,219,.2);color:var(--blue)}
+    .climate-badge.mild{background:var(--green-lt);border-color:rgba(0,168,107,.2);color:var(--green)}
+    .cb-icon{font-size:1.05rem}.cb-lbl{font-family:var(--mono);font-size:.52rem;letter-spacing:.12em;text-transform:uppercase}
+    .cb-val{font-weight:600;font-size:.82rem}
+    .rp-bar-wrap{margin-bottom:.8rem}
+    .rp-bar-head{display:flex;justify-content:space-between;font-family:var(--mono);font-size:.54rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.28rem}
+    .rp-bar-track{height:6px;background:var(--bg);border:1px solid var(--border);border-radius:2px;overflow:hidden}
+    .rp-bar-fill{height:100%;border-radius:2px;width:0%;transition:width 1s cubic-bezier(.4,0,.2,1)}
+    .rp-bar-fill.r{background:var(--red)}.rp-bar-fill.g{background:var(--green)}.rp-bar-fill.b{background:var(--blue)}
+    .rp-notes{font-size:.76rem;line-height:1.68;color:var(--muted);font-weight:300;margin-bottom:.8rem}
+    .rp-arrows{display:flex;gap:.45rem;margin-bottom:.45rem}
+    .rp-arr{flex:1;padding:.55rem;border:1px solid var(--border);background:var(--bg);font-family:var(--mono);font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);cursor:pointer;border-radius:2px;transition:all .18s}
+    .rp-arr:hover:not([disabled]){background:var(--green);color:#fff;border-color:var(--green)}
+    .rp-arr[disabled]{opacity:.3;cursor:default}
+    .rp-cta{display:block;width:100%;padding:.7rem;background:var(--green);color:#fff;font-family:var(--mono);font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;border-radius:2px;transition:background .18s;text-align:center;text-decoration:none}
+    .rp-cta:hover{background:var(--green-dk)}
+
+    .note-banner{padding:1rem 2rem;background:var(--amber-lt);border-top:1px solid rgba(224,123,0,.2);display:flex;gap:.8rem;align-items:flex-start}
+    .note-banner .icon{font-size:1rem;flex-shrink:0}
+    .note-banner p{font-size:.78rem;line-height:1.6;color:var(--amber)}
+    footer{border-top:1px solid var(--border);padding:1.2rem 2rem;display:flex;align-items:center;justify-content:space-between}
+    footer p{font-family:var(--mono);font-size:.6rem;color:var(--muted);letter-spacing:.08em}
+    .flinks{display:flex;gap:1.5rem}
+    .flinks a{font-family:var(--mono);font-size:.6rem;color:var(--muted);text-decoration:none;letter-spacing:.1em;transition:color .18s}
+    .flinks a:hover{color:var(--green)}
+
+    @media(max-width:960px){
+      nav{padding:1rem 1.5rem}.nav-links{display:none}
+      .main-wrap{grid-template-columns:1fr}
+      .right{position:static;height:auto;border-top:1px solid var(--border);border-left:none}
+      .insights{grid-template-columns:1fr 1fr}
+      .stat-chips{grid-template-columns:1fr 1fr}
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="home.html" class="nav-logo">A Study on the FIFA World Cup 2026</a>
+  <ul class="nav-links">
+    <li><a href="home.html">Home</a></li>
+    <li><a href="museum.html">Museum</a></li>
+    <li><a href="climate-map.html" class="active">Climate Map</a></li>
+    <li><a href="climate-data.html">Climate Data</a></li>
+    <li><a href="recommendations.html">Recommendations</a></li>
+    <li><a href="sources.html">Sources</a></li>
+    <li><a href="about.html">About</a></li>
+  </ul>
+</nav>
+
+<header class="page-header">
+  <div class="ph-bg"></div>
+  <div class="ph-overlay"></div>
+  <div class="grid"></div>
+  <div class="ph-heat-tag">Avg host-city temp<br/>risen +1.4°C since 1930<br/>Qatar 2022 · 45°C summer peak</div>
+  <p class="htag">// Page 03 · Interactive Climate Map</p>
+  <h1>Climate<br/><em>World Map</em></h1>
+  <p>Every World Cup host nation mapped with climate impact. Click any country or timeline node to explore CO₂ changes, temperature anomalies, and key facts.</p>
+</header>
+
+<div class="insights">
+  <div class="ins i1"><div class="ins-label">Hottest Host</div><div class="ins-val">31°C</div><div class="ins-sub">Mexico 1970 · Noon kick-offs</div></div>
+  <div class="ins i2"><div class="ins-label">Best CO₂ Record</div><div class="ins-val">−1%</div><div class="ins-sub">Germany 2006 · Rail over air</div></div>
+  <div class="ins i3"><div class="ins-label">Worst CO₂ Record</div><div class="ins-val">+49%</div><div class="ins-sub">Qatar 2022 · vs bid baseline</div></div>
+  <div class="ins i4"><div class="ins-label">2026 Projection</div><div class="ins-val">~+35%</div><div class="ins-sub">USA/Canada/Mexico · Modeled</div></div>
+</div>
+
+<div class="main-wrap">
+  <!-- LEFT COLUMN -->
+  <div class="left">
+
+    <div class="controls-row">
+      <div class="map-mode-bar">
+        <span class="mode-label">Map Mode:</span>
+        <button class="mbtn on" data-mode="hosts">Host Nations</button>
+        <button class="mbtn" data-mode="temp">Temp Anomaly</button>
+        <button class="mbtn" data-mode="co2">CO₂ Change</button>
+      </div>
+      <div class="filter-bar">
+        <span class="flabel">Region:</span>
+        <button class="fbtn on" data-f="all">All</button>
+        <button class="fbtn" data-f="Europe">Europe</button>
+        <button class="fbtn" data-f="Americas">Americas</button>
+        <button class="fbtn" data-f="Asia">Asia</button>
+        <button class="fbtn" data-f="Africa">Africa</button>
+      </div>
+    </div>
+
+    <div class="scale-wrap" id="scale-wrap">
+      <span class="scale-label">Scale</span>
+      <div style="flex:1"><div class="scale-bar" id="scale-bar"></div><div class="scale-ticks" id="scale-ticks"></div></div>
+    </div>
+
+    <div class="map-wrap">
+      <div class="map-load" id="map-load"><span style="font-size:1.8rem">🗺️</span><span>Loading climate map…</span></div>
+      <svg id="map" style="display:none"></svg>
+      <div class="map-tip" id="map-tip"></div>
+      <div class="map-legend" id="map-legend">
+        <div class="ldot" style="background:#6ee7b7"></div><span class="ltext">Past Host</span>
+        <div class="ldot" style="background:#93c5fd"></div><span class="ltext">2026 Host</span>
+        <div class="ldot" style="background:#059669"></div><span class="ltext">Selected</span>
+        <div class="ldot" style="background:#e2e8f0"></div><span class="ltext">Non-host</span>
+      </div>
+      <div class="map-ctrls">
+        <button class="mc" id="mc-in">+</button>
+        <button class="mc" id="mc-out">−</button>
+        <button class="mc sm" id="mc-rst">⊙</button>
+      </div>
+    </div>
+
+    <div class="tl-wrap">
+      <div class="sec-head">Tournament Timeline — Click to Select <span class="tl-hint">← scroll →</span></div>
+      <div class="tl-scroll" id="tl-scroll">
+        <div class="tl-track" id="tl-track"></div>
+      </div>
+    </div>
+
+    <div class="stat-chips">
+      <div class="schip"><div class="schip-val">22</div><div class="schip-label">Tournaments</div></div>
+      <div class="schip"><div class="schip-val">18</div><div class="schip-label">Host Nations</div></div>
+      <div class="schip"><div class="schip-val">+1.4°C</div><div class="schip-label">Temp Rise</div></div>
+      <div class="schip"><div class="schip-val">96yrs</div><div class="schip-label">of Data</div></div>
+    </div>
+
+    <div class="cont-sec">
+      <div class="sec-head">By Continent</div>
+      <div class="cont-grid" id="cont-grid"></div>
+    </div>
+  </div>
+
+  <!-- RIGHT SIDEBAR — sticky, beside map in the grid -->
+  <div class="right" id="right-panel">
+    <div class="rp-empty" id="rp-empty">
+      <div class="rp-empty-icon">🌍</div>
+      <p>Click any green country on the map, or a node on the timeline.</p>
+    </div>
+    <div id="rp-detail"></div>
+  </div>
+</div>
+
+<div class="note-banner">
+  <span class="icon">⚠️</span>
+  <p><strong>Data note:</strong> CO₂ figures show % change in national emissions from bid year to tournament year (Global Carbon Project, 2023). Temperature anomalies vs. 1951–1980 baseline per host city (Berkeley Earth, 2024).</p>
+</div>
+
+
+<div style="margin:0 3rem 1rem;padding:.65rem 1rem;background:rgba(0,168,107,.07);border-left:2px solid rgba(0,168,107,.3);border-radius:0 3px 3px 0;font-family:var(--mono);font-size:.63rem;color:rgba(255,255,255,.38);line-height:1.75"><strong style="color:rgba(255,255,255,.5)">Data sources:</strong> CO₂: <a href="https://ourworldindata.org/co2-and-greenhouse-gas-emissions" target="_blank" rel="noopener" style="color:#4ec994;text-decoration:none">Our World in Data / GCP &#x2197;</a> &middot; <a href="https://essd.copernicus.org/articles/15/5301/2023/" target="_blank" rel="noopener" style="color:#4ec994;text-decoration:none">Friedlingstein et al. 2023 &#x2197;</a> | Temp: <a href="https://berkeleyearth.org/data/" target="_blank" rel="noopener" style="color:#4ec994;text-decoration:none">Berkeley Earth &#x2197;</a> | Pop: <a href="https://data.worldbank.org/indicator/SP.POP.TOTL" target="_blank" rel="noopener" style="color:#4ec994;text-decoration:none">World Bank &#x2197;</a> | Attendance: FIFA Records &#x2197; | Germany 2006: <a href="https://www.oeko.de/oekodoc/292/2006-011-en.pdf" target="_blank" rel="noopener" style="color:#4ec994;text-decoration:none">Green Goal Report &#x2197;</a> | Qatar: <a href="https://carbonmarketwatch.org/publications/poor-tackling-yellow-card-for-2022-fifa-world-cups-carbon-neutrality-claim/" target="_blank" rel="noopener" style="color:#4ec994;text-decoration:none">Carbon Market Watch &#x2197;</a></div>
+<footer>
+  <p>WC Climate // 2026 — Data: FIFA · <a href="https://berkeleyearth.org/data/" target="_blank" rel="noopener" style="color:rgba(255,255,255,.3);text-decoration:none" onmouseover="this.style.color='#00a86b'" onmouseout="this.style.color='rgba(255,255,255,.3)'">Berkeley Earth</a> · <a href="https://ourworldindata.org/co2-and-greenhouse-gas-emissions" target="_blank" rel="noopener" style="color:rgba(255,255,255,.3);text-decoration:none" onmouseover="this.style.color='#00a86b'" onmouseout="this.style.color='rgba(255,255,255,.3)'">Global Carbon Project</a> · <a href="https://www.ipcc.ch/report/ar6/wg1/" target="_blank" rel="noopener" style="color:rgba(255,255,255,.3);text-decoration:none" onmouseover="this.style.color='#00a86b'" onmouseout="this.style.color='rgba(255,255,255,.3)'">IPCC AR6</a></p>
+  <div class="flinks">
+    <a href="home.html">Home</a><a href="museum.html">Museum</a>
+    <a href="climate-data.html">Climate Data</a><a href="recommendations.html">Recommendations</a>
+    <a href="sources.html">Sources</a>
+  </div>
+</footer>
+
+<script>
+var WC=[
+  {year:1930,host:"Uruguay",flag:"🇺🇾",cont:"Americas",win:"Uruguay",teams:13,venues:3,att:590549,co2:null,temp:null,iso:858,avgTemp:22,upcoming:false,climateType:'mild',notes:"The inaugural World Cup. Uruguay hosted and won in Montevideo. No climate data exists for this era — global CO₂ was ~307 ppm.",pop:2.9,funFact:"Only 13 of 16 invited nations attended — European teams refused the long sea voyage."},
+  {year:1934,host:"Italy",flag:"🇮🇹",cont:"Europe",win:"Italy",teams:16,venues:8,att:395000,co2:41,temp:.1,iso:380,avgTemp:20,upcoming:false,climateType:'mild',notes:"Mussolini used the tournament for political prestige. New stadium construction drove a significant CO₂ rise.",pop:41.2,funFact:"The only World Cup where the defending champions (Uruguay) refused to defend their title in protest."},
+  {year:1938,host:"France",flag:"🇫🇷",cont:"Europe",win:"Italy",teams:15,venues:9,att:483000,co2:2,temp:.1,iso:250,avgTemp:18,upcoming:false,climateType:'mild',notes:"The last World Cup before WWII. France hosted across 10 cities in mild summer conditions.",pop:41.8,funFact:"Austria was absorbed into Germany before the tournament — Austrian players joined the German squad."},
+  {year:1950,host:"Brazil",flag:"🇧🇷",cont:"Americas",win:"Uruguay",teams:13,venues:6,att:1045246,co2:0,temp:.2,iso:76,avgTemp:23,upcoming:false,climateType:'warm',notes:"The Maracanã was built at 200,000 capacity. The Maracanazo — Uruguay's shock 2–1 win — devastated the nation.",pop:53.6,funFact:"The 1950 final attracted 173,850 ticketed fans — still the largest crowd in football history."},
+  {year:1954,host:"Switzerland",flag:"🇨🇭",cont:"Europe",win:"W.Germany",teams:16,venues:6,att:768607,co2:5,temp:0,iso:756,avgTemp:16,upcoming:false,climateType:'mild',notes:"The Miracle of Bern. Compact Swiss hosting kept emissions modest at +5%.",pop:4.8,funFact:"Hungary scored 27 goals in 5 games but still lost the final to West Germany in the biggest upset of the era."},
+  {year:1958,host:"Sweden",flag:"🇸🇪",cont:"Europe",win:"Brazil",teams:16,venues:12,att:819810,co2:4,temp:.1,iso:752,avgTemp:15,upcoming:false,climateType:'mild',notes:"Pelé's debut at 17. Sweden's clean energy baseline helped keep emissions lower than most European hosts.",pop:7.5,funFact:"Pelé became the youngest top scorer in WC history at 17 — a record that still stands today."},
+  {year:1962,host:"Chile",flag:"🇨🇱",cont:"Americas",win:"Brazil",teams:16,venues:4,att:893172,co2:18,temp:.2,iso:152,avgTemp:14,upcoming:false,climateType:'mild',notes:"Hosted just 2 years after a devastating earthquake. Chile's rapid reconstruction drove a CO₂ increase.",pop:8.0,funFact:"Chile hosted 2 years after the strongest earthquake ever recorded — 9.5 magnitude in 1960."},
+  {year:1966,host:"England",flag:"🏴󠁧󠁢󠁥󠁮󠁧󠁿",cont:"Europe",win:"England",teams:16,venues:8,att:1563135,co2:6,temp:.1,iso:826,avgTemp:17,upcoming:false,climateType:'mild',notes:"England's only World Cup win. Existing football grounds kept construction emissions to just +6%.",pop:54.4,funFact:"England's 1966 victory remains their only major international trophy — all matches used existing grounds."},
+  {year:1970,host:"Mexico",flag:"🇲🇽",cont:"Americas",win:"Brazil",teams:16,venues:5,att:1603975,co2:14,temp:.6,iso:484,avgTemp:31,upcoming:false,climateType:'hot',notes:"Noon kick-offs at altitude in 31°C heat for European TV. The first World Cup to seriously grapple with heat stress on players.",pop:52.8,funFact:"First World Cup broadcast in colour globally — Brazil's yellow jersey became iconic overnight."},
+  {year:1974,host:"W. Germany",flag:"🇩🇪",cont:"Europe",win:"W.Germany",teams:16,venues:9,att:1865753,co2:9,temp:.1,iso:276,avgTemp:17,upcoming:false,climateType:'mild',notes:"Total Football era. Existing infrastructure moderated emissions rise to +9%.",pop:62.1,funFact:"The Netherlands played Total Football but lost the final despite never conceding in open play."},
+  {year:1978,host:"Argentina",flag:"🇦🇷",cont:"Americas",win:"Argentina",teams:16,venues:6,att:1545791,co2:31,temp:.6,iso:32,avgTemp:15,upcoming:false,climateType:'mild',notes:"Hosted under military dictatorship. Showcase construction drove a +31% CO₂ rise.",pop:26.9,funFact:"Argentina won their first title on home soil. The ticker-tape in Buenos Aires remains legendary."},
+  {year:1982,host:"Spain",flag:"🇪🇸",cont:"Europe",win:"Italy",teams:24,venues:17,att:2109723,co2:169,temp:.2,iso:724,avgTemp:22,upcoming:false,climateType:'warm',notes:"First expansion to 24 teams across 17 venues. Spain's rapid industrialisation drove the highest recorded CO₂ jump.",pop:37.9,funFact:"Spain 1982 had the most venues of any World Cup — 17 stadiums across the entire country."},
+  {year:1986,host:"Mexico",flag:"🇲🇽",cont:"Americas",win:"Argentina",teams:24,venues:12,att:2394031,co2:90,temp:.2,iso:484,avgTemp:28,upcoming:false,climateType:'hot',notes:"Mexico stepped in after Colombia withdrew. Maradona's tournament. Noon kick-offs in mountain heat continued.",pop:80.4,funFact:"Maradona's Hand of God and Goal of the Century both occurred in the SAME quarter-final match vs England."},
+  {year:1990,host:"Italy",flag:"🇮🇹",cont:"Europe",win:"W.Germany",teams:24,venues:12,att:2516215,co2:20,temp:.2,iso:380,avgTemp:21,upcoming:false,climateType:'warm',notes:"Italia 90 — major stadium renovations. Growing awareness of heat stress during afternoon matches.",pop:56.7,funFact:"Italia 90 produced the lowest average goals per game (2.21) in World Cup history — the most defensive tournament."},
+  {year:1994,host:"USA",flag:"🇺🇸",cont:"Americas",win:"Brazil",teams:24,venues:9,att:3587538,co2:2,temp:.6,iso:840,avgTemp:24,upcoming:false,climateType:'warm',notes:"Record 3.59M attendance. Converted NFL stadiums cut construction. Afternoon matches in Dallas hit 40°C+ heat index.",pop:263.1,funFact:"USA 1994 set the all-time attendance record — 3,587,538 fans. It still stands 30+ years later."},
+  {year:1998,host:"France",flag:"🇫🇷",cont:"Europe",win:"France",teams:32,venues:10,att:2785100,co2:2,temp:.2,iso:250,avgTemp:17,upcoming:false,climateType:'mild',notes:"Post-Kyoto Protocol era. Best CO₂ record at +2%. Mild summer, Zidane's famous final double.",pop:60.4,funFact:"France hosted and won — Zidane's two headers in the final sealed the historic home triumph."},
+  {year:2002,host:"Japan/S.Korea",flag:"🇯🇵🇰🇷",cont:"Asia",win:"Brazil",teams:32,venues:20,att:2705197,co2:2,temp:.4,iso:392,avgTemp:22,upcoming:false,climateType:'warm',notes:"First co-hosted and first Asian WC. 20 entirely new stadiums generated enormous construction emissions.",pop:127.5,funFact:"South Korea became the first Asian nation to reach a World Cup semi-final."},
+  {year:2006,host:"Germany",flag:"🇩🇪",cont:"Europe",win:"Italy",teams:32,venues:12,att:3359439,co2:-1,temp:.2,iso:276,avgTemp:18,upcoming:false,climateType:'mild',notes:"The Green World Cup. Germany pioneered carbon tracking. High rail usage helped achieve a −1% CO₂ result.",pop:82.4,funFact:"90% of fans travelled by public transport — Germany's Green Goal saved 17,000 tonnes of CO₂."},
+  {year:2010,host:"South Africa",flag:"🇿🇦",cont:"Africa",win:"Spain",teams:32,venues:10,att:3178856,co2:4,temp:.4,iso:710,avgTemp:12,upcoming:false,climateType:'cool',notes:"First African WC in Southern Hemisphere winter. Unexpected cold. First official FIFA carbon offset program.",pop:50.1,funFact:"The vuvuzela became the most iconic — and divisive — sound in World Cup history."},
+  {year:2014,host:"Brazil",flag:"🇧🇷",cont:"Americas",win:"Germany",teams:32,venues:12,att:3429873,co2:43,temp:.6,iso:76,avgTemp:25,upcoming:false,climateType:'warm',notes:"FIFA's first cooling breaks in Manaus at 32°C+. Rushed infrastructure drove a major CO₂ spike.",pop:202.8,funFact:"Germany beat Brazil 7–1 on home soil — the Mineirazo — the most shocking result in WC history."},
+  {year:2018,host:"Russia",flag:"🇷🇺",cont:"Europe",win:"France",teams:32,venues:12,att:3031768,co2:5,temp:.5,iso:643,avgTemp:20,upcoming:false,climateType:'warm',notes:"11 cities spanning vast distances. Long internal travel raised per-fan emissions despite a modest +5% national CO₂ rise.",pop:144.5,funFact:"2018 saw 43% of all goals from set pieces — the highest proportion of any World Cup ever."},
+  {year:2022,host:"Qatar",flag:"🇶🇦",cont:"Asia",win:"Argentina",teams:32,venues:8,att:3404252,co2:49,temp:.9,iso:634,avgTemp:28,upcoming:false,climateType:'hot',notes:"Air-conditioned stadiums, shifted to winter. FIFA's carbon neutral claim disputed. CO₂ up +49% from bid year 2010.",pop:2.7,funFact:"Qatar is the smallest country to host the WC — all 8 stadiums were within 75km of each other."},
+  {year:2026,host:"USA/CAN/MEX",flag:"🇺🇸🇨🇦🇲🇽",cont:"Americas",win:"TBD",teams:48,venues:16,att:null,co2:null,temp:null,iso:840,avgTemp:null,upcoming:true,climateType:'warm',notes:"First 48-team WC across three nations and 16 cities from Vancouver to Mexico City. Projected ~+35% CO₂.",pop:null,funFact:"2026 will be the first 48-team World Cup — 104 matches across USA, Canada, and Mexico.",proj:{co2:"~+35%",temp:"~+0.4°C",avgTemp:"~22-26°C"}},
+];
+
+var HOST_NUMS=new Set([858,380,250,76,756,752,152,826,484,276,32,724,840,392,710,643,634,124]);
+var UPC_NUMS=new Set([840,124,484]);
+var selIdx=null,curMode='hosts',curFilter='all';
+var mapSvg,mapG,mapZoom,mapPaths;
+
+function buildTimeline(list){
+  var track=document.getElementById('tl-track');
+  track.innerHTML='';
+  list.forEach(function(t){
+    var i=WC.indexOf(t);
+    var n=document.createElement('div');
+    n.className='tl-node'+(t.upcoming?' upcoming':'')+(selIdx===i?' sel':'');
+    n.dataset.i=i;
+    n.innerHTML='<div class="tl-dot"></div><div class="tl-yr">'+t.year+'</div><div class="tl-fl">'+t.flag+'</div><div class="tl-ho">'+t.host.split('/')[0]+'</div>';
+    n.addEventListener('click',function(){openDetail(parseInt(this.dataset.i));});
+    track.appendChild(n);
+  });
+  if(selIdx!==null){
+    var sel=track.querySelector('.sel');
+    if(sel)setTimeout(function(){sel.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});},100);
+  }
+}
+
+function buildChips(){
+  var counts={};
+  WC.forEach(function(t){counts[t.cont]=(counts[t.cont]||0)+1;});
+  var icons={Europe:'🌍',Americas:'🌎',Asia:'🌏',Africa:'🌍'};
+  var g=document.getElementById('cont-grid');
+  Object.entries(counts).forEach(function(e){
+    var cont=e[0],n=e[1];
+    var d=document.createElement('div');
+    d.className='cchip';
+    d.innerHTML='<div class="cicon">'+(icons[cont]||'🌐')+'</div><div><div class="cname">'+cont+'</div><div class="ccount">'+n+' tournament'+(n>1?'s':'')+'</div></div>';
+    d.addEventListener('click',function(){
+      document.querySelectorAll('.cchip').forEach(function(c){c.classList.remove('on');});
+      d.classList.add('on');applyFilter(cont);
+    });
+    g.appendChild(d);
+  });
+}
+
+function applyFilter(f){
+  curFilter=f;
+  document.querySelectorAll('.fbtn').forEach(function(b){b.classList.toggle('on',b.dataset.f===f);});
+  var list=f==='all'?WC:WC.filter(function(t){return t.cont===f;});
+  buildTimeline(list);updateMapColors();
+}
+document.querySelectorAll('.fbtn').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    document.querySelectorAll('.cchip').forEach(function(c){c.classList.remove('on');});
+    applyFilter(btn.dataset.f);
+  });
+});
+
+document.querySelectorAll('.mbtn').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    document.querySelectorAll('.mbtn').forEach(function(b){b.classList.remove('on');});
+    btn.classList.add('on');curMode=btn.dataset.mode;updateMapColors();updateScale();
+  });
+});
+
+function tempColor(t){if(t===null)return'#e2e8f0';if(t<=0)return'#93c5fd';if(t<=.2)return'#6ee7b7';if(t<=.4)return'#fde68a';if(t<=.6)return'#fdba74';return'#f87171';}
+function co2Color(c){if(c===null)return'#e2e8f0';if(c<0)return'#6ee7b7';if(c<=10)return'#a7f3d0';if(c<=20)return'#fde68a';if(c<=40)return'#fdba74';return'#f87171';}
+
+function updateScale(){
+  var wrap=document.getElementById('scale-wrap');
+  var bar=document.getElementById('scale-bar');
+  var ticks=document.getElementById('scale-ticks');
+  if(curMode==='hosts'){wrap.style.display='none';document.getElementById('map-legend').style.display='flex';return;}
+  wrap.style.display='flex';document.getElementById('map-legend').style.display='none';
+  if(curMode==='temp'){bar.style.background='linear-gradient(to right,#93c5fd,#6ee7b7,#fde68a,#fdba74,#f87171)';ticks.innerHTML='<span>≤0°C</span><span>+0.2</span><span>+0.4</span><span>+0.6</span><span>>+0.6</span>';}
+  else{bar.style.background='linear-gradient(to right,#6ee7b7,#a7f3d0,#fde68a,#fdba74,#f87171)';ticks.innerHTML='<span><0%</span><span>+10</span><span>+20</span><span>+40</span><span>>+40%</span>';}
+}
+
+function latestByISO(num){var m=WC.filter(function(t){return t.iso===num&&!t.upcoming;});return m.length?m[m.length-1]:null;}
+function getCountryColor(num){
+  if(curMode==='hosts'){
+    if(UPC_NUMS.has(num))return'#93c5fd';
+    if(HOST_NUMS.has(num)){if(curFilter!=='all'){var t=latestByISO(num);return(t&&t.cont===curFilter)?'#6ee7b7':'#d1fae5';}return'#6ee7b7';}
+    return'#e2e8f0';
+  }
+  if(!HOST_NUMS.has(num))return'#e2e8f0';
+  var t=latestByISO(num);if(!t)return'#e2e8f0';
+  if(curMode==='temp')return tempColor(t.temp);
+  if(curMode==='co2')return co2Color(t.co2);
+  return'#e2e8f0';
+}
+function updateMapColors(){
+  if(!mapPaths)return;
+  mapPaths.attr('fill',function(d){return getCountryColor(+d.id);}).attr('stroke','#fff').attr('stroke-width',.5);
+}
+function highlightISO(num){
+  if(!mapPaths)return;
+  // For 2026, highlight all three host nations: USA (840), Canada (124), Mexico (484)
+  // For 2002, highlight both Japan (392) and South Korea (410)
+  var multiISO=(num===840)?[840,124,484]:(num===392)?[392,410]:[num];
+  mapPaths
+    .attr('fill',function(d){return(multiISO.indexOf(+d.id)>-1)?'#059669':getCountryColor(+d.id);})
+    .attr('stroke',function(d){return(multiISO.indexOf(+d.id)>-1)?'#047857':'#fff';})
+    .attr('stroke-width',function(d){return(multiISO.indexOf(+d.id)>-1)?2:.5;});
+}
+
+function openDetail(i){
+  selIdx=i;
+  var t=WC[i];
+  document.querySelectorAll('.tl-node').forEach(function(n){n.classList.toggle('sel',parseInt(n.dataset.i)===i);});
+  var sel=document.querySelector('.tl-node.sel');
+  if(sel)setTimeout(function(){sel.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});},80);
+
+  var emptyEl=document.getElementById('rp-empty');
+  var detailEl=document.getElementById('rp-detail');
+  var panel=document.getElementById('right-panel');
+  emptyEl.style.display='none';
+  detailEl.style.display='block';
+  panel.scrollTop=0;
+
+  var isNeg=t.co2!==null&&t.co2<0;
+  var dir=t.co2===null?'pj':(isNeg?'dn':'up');
+  var co2Lbl=t.co2===null?(t.upcoming?t.proj.co2:'N/A'):(t.co2>=0?'+'+t.co2+'%':t.co2+'%');
+  var tmpLbl=t.temp===null?(t.upcoming?t.proj.temp:'N/A'):'+'+t.temp+'°C';
+  var bw=t.co2===null?35:Math.min(Math.abs(t.co2),100);
+  var bc=t.upcoming?'b':(isNeg?'g':'r');
+  var attLbl=t.att?(t.att/1e6).toFixed(2)+'M':'—';
+  var popLbl=t.pop?t.pop.toFixed(1)+'M':'—';
+
+  var climClass='mild',climBadge='🌿 Temperate';
+  if(t.climateType==='hot'){climClass='hot';climBadge='🔥 Extreme Heat';}
+  else if(t.climateType==='warm'){climClass='warm';climBadge='☀️ Warm/Tropical';}
+  else if(t.climateType==='cool'){climClass='cool';climBadge='🌬 Cool/Mild';}
+
+  var hdrBg={hot:'#7f1d1d',warm:'#451a03',cool:'#1e3a5f',mild:'#052e16'}[t.climateType]||'#0a1220';
+
+  // Real flag image filling entire header
+  var isoAlpha2={858:'uy',380:'it',250:'fr',76:'br',756:'ch',752:'se',152:'cl',826:'gb-eng',484:'mx',276:'de',32:'ar',724:'es',840:'us',392:'jp',710:'za',643:'ru',634:'qa',124:'ca'};
+  var alpha2=isoAlpha2[t.iso]||'';
+  var flagSrc=alpha2?'https://flagcdn.com/w640/'+alpha2+'.png':'';
+
+  var html='';
+  // For 2026: show three flags side by side
+  if(t.upcoming && t.year===2026){
+    html+='<div class="rp-flag-header" style="background:#0a1a2e;display:flex;align-items:stretch;overflow:hidden;position:relative">';
+    html+='<div style="flex:1;position:relative"><img src="https://flagcdn.com/w320/us.png" alt="USA" style="width:100%;height:148px;object-fit:cover;display:block"></div>';
+    html+='<div style="flex:1;position:relative"><img src="https://flagcdn.com/w320/ca.png" alt="Canada" style="width:100%;height:148px;object-fit:cover;display:block"></div>';
+    html+='<div style="flex:1;position:relative"><img src="https://flagcdn.com/w320/mx.png" alt="Mexico" style="width:100%;height:148px;object-fit:cover;display:block"></div>';
+    html+='<div class="rp-flag-overlay" style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.45) 0%,transparent 60%)"></div>';
+    html+='<div class="rp-yr-bg" style="position:absolute;right:.4rem;bottom:-.6rem">'+t.year+'</div>';
+    html+='</div>';
+  // For 2002: show Japan and South Korea flags side by side
+  } else if(t.year===2002){
+    html+='<div class="rp-flag-header" style="background:#0a1a2e;display:flex;align-items:stretch;overflow:hidden;position:relative">';
+    html+='<div style="flex:1;position:relative"><img src="https://flagcdn.com/w320/jp.png" alt="Japan" style="width:100%;height:148px;object-fit:cover;display:block"></div>';
+    html+='<div style="flex:1;position:relative"><img src="https://flagcdn.com/w320/kr.png" alt="South Korea" style="width:100%;height:148px;object-fit:cover;display:block"></div>';
+    html+='<div class="rp-flag-overlay" style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.45) 0%,transparent 60%)"></div>';
+    html+='<div class="rp-yr-bg" style="position:absolute;right:.4rem;bottom:-.6rem">'+t.year+'</div>';
+    html+='</div>';
+  } else if(flagSrc){
+    html+='<div class="rp-flag-header"><img class="rp-flag-img" src="'+flagSrc+'" alt="'+t.host+' flag" onerror="this.parentElement.style.background=\''+hdrBg+'\';this.style.display=\'none\'"><div class="rp-flag-overlay"></div><div class="rp-yr-bg">'+t.year+'</div></div>';
+  } else {
+    html+='<div class="rp-flag-header" style="background:'+hdrBg+';display:flex;align-items:center;justify-content:center"><span style="font-size:4.5rem;filter:drop-shadow(0 4px 14px rgba(0,0,0,.5))">'+t.flag+'</span><div class="rp-yr-bg">'+t.year+'</div></div>';
+  }
+
+  html+='<div class="rp-body">';
+  if(t.upcoming)html+='<div class="rp-proj">&#x26A1; Projected</div>';
+  html+='<div class="rp-year">'+t.year+'</div>';
+  html+='<div class="rp-host">'+t.host+'</div>';
+  html+='<div class="rp-cont">'+t.cont+'</div>';
+  html+='<div class="rp-div"></div>';
+
+  html+='<div class="climate-badge '+climClass+'"><div><div class="cb-lbl">Climate Type</div><div class="cb-val">'+climBadge+'</div></div></div>';
+  html+='<div class="rp-win"><div class="rp-trophy">&#x1F3C6;</div><div><div class="rp-wlabel">Champion</div><div class="rp-wname">'+t.win+'</div></div></div>';
+
+  // Stats grid — Teams / Venues / CO2 / Temp anomaly
+  html+='<div class="rp-grid"><div class="rp-stat"><div class="rp-slabel">Teams</div><div class="rp-sval">'+t.teams+'</div></div><div class="rp-stat"><div class="rp-slabel">Venues</div><div class="rp-sval">'+t.venues+'</div></div><div class="rp-stat"><div class="rp-slabel">CO&#8322; Change</div><div class="rp-sval '+dir+'">'+co2Lbl+'</div></div><div class="rp-stat"><div class="rp-slabel">Temp Anomaly</div><div class="rp-sval '+dir+'">'+tmpLbl+'</div></div></div>';
+
+  // Average temperature box
+  var avgTempVal = t.upcoming ? (t.proj && t.proj.avgTemp ? t.proj.avgTemp : '~22–26°C') : (t.avgTemp !== null && t.avgTemp !== undefined ? t.avgTemp+'°C' : 'No data');
+  var avgTempColor = (t.avgTemp>=28)?'var(--red)':(t.avgTemp>=22)?'var(--amber)':(t.avgTemp<=16)?'#4a90d9':'var(--green)';
+  var avgTempContext = (t.avgTemp>=28)?' — Extreme heat risk':(t.avgTemp>=24)?' — Hot conditions':(t.avgTemp>=20)?' — Warm playing conditions':(t.avgTemp!==null&&t.avgTemp<=16)?' — Cool/cold conditions':'';
+  html+='<div class="rp-stat" style="margin-bottom:.8rem;border-left:3px solid '+avgTempColor+'">';
+  html+='<div class="rp-slabel">&#x1F321; Avg. Match-Day Temperature</div>';
+  html+='<div style="font-family:var(--hero);font-size:1.6rem;color:'+avgTempColor+';line-height:1;margin:.15rem 0">'+avgTempVal+'</div>';
+  html+='<div style="font-size:.68rem;color:var(--muted);font-weight:300;margin-top:.2rem">Host city average during tournament'+avgTempContext+'</div>';
+  html+='</div>';
+
+  // CO2 bar with plain-language explanation
+  var bidYearApprox = t.upcoming ? 'bid year' : (t.year<=1966 ? 'pre-bid era' : '~'+(t.year-8));
+  var co2Explain = t.upcoming
+    ? '<strong>Why ~+35%?</strong> The 2026 expansion to 48 teams and 104 matches across 3 countries and 16 cities dramatically increases long-haul international air travel — the single largest driver of tournament emissions. The USA, Canada, and Mexico combined have significantly higher national CO&#8322; baselines than any single previous host. Construction of new and renovated venues, plus the longest inter-city travel distances in World Cup history, push the projection well above the 2010–2022 average. Estimate based on IPCC AR6 SSP2-4.5 regional models and Carbon Market Watch 2023 projections. <a href="https://www.ipcc.ch/report/ar6/wg1/" target="_blank" rel="noopener" style="color:rgba(100,200,150,.7);font-size:.85em">IPCC AR6 &#x2197;</a>'
+    : (t.co2===null
+      ? 'No reliable CO&#8322; data for this era.'
+      : (t.co2<0
+        ? 'National CO&#8322; emissions <strong>fell</strong> between bid year and tournament year — a historic first. <a href="https://ourworldindata.org/co2-and-greenhouse-gas-emissions" target="_blank" rel="noopener" style="color:rgba(100,200,150,.7);font-size:.85em">Source: Global Carbon Project &#x2197;</a>'
+        : 'National CO&#8322; emissions rose <strong>'+co2Lbl+'</strong> from bid year ('+bidYearApprox+') to '+t.year+'.'));
+
+  html+='<div class="rp-bar-wrap"><div class="rp-bar-head"><span>CO&#8322; Change: Bid Year &#8594; Tournament</span><span style="color:'+(isNeg?'var(--green)':'var(--red)')+'">'+co2Lbl+'</span></div>';
+  html+='<div class="rp-bar-track"><div class="rp-bar-fill '+bc+'" id="rpbar" style="width:0%"></div></div>';
+  html+='<div style="font-size:.69rem;line-height:1.55;color:var(--muted);margin-top:.35rem;font-weight:300">'+co2Explain+'</div></div>';
+
+  html+='<div class="rp-grid"><div class="rp-stat"><div class="rp-slabel">Attendance</div><div class="rp-sval" style="font-size:1rem">'+attLbl+'</div></div><div class="rp-stat"><div class="rp-slabel">Population</div><div class="rp-sval" style="font-size:1rem">'+popLbl+'</div></div></div>';
+
+  if(t.funFact)html+='<div style="background:var(--blue-lt);border:1px solid rgba(26,111,219,.18);border-radius:3px;padding:.7rem .85rem;margin-bottom:.75rem"><div style="font-family:var(--mono);font-size:.5rem;letter-spacing:.14em;text-transform:uppercase;color:var(--blue);margin-bottom:.28rem">Fun Fact</div><div style="font-size:.76rem;line-height:1.65;color:var(--text);font-weight:300">'+t.funFact+'</div></div>';
+  html+='<p class="rp-notes">'+t.notes+'</p>';
+  html+='<div style="margin-top:.8rem;padding:.5rem .8rem;background:rgba(0,168,107,.07);border-left:2px solid rgba(0,168,107,.3);border-radius:0 3px 3px 0;font-family:var(--mono);font-size:.62rem;color:rgba(255,255,255,.32);line-height:1.65;display:flex;flex-wrap:wrap;gap:.5rem"><span style=\'opacity:.45\'>&#128204; Sources:</span> <a href=\'https://ourworldindata.org/co2-and-greenhouse-gas-emissions\' target=\'_blank\' rel=\'noopener\' style=\'color:#4ec994;opacity:.8;text-decoration:none\'>Global Carbon Project/OWID &#x2197;</a> &middot; <a href=\'https://berkeleyearth.org/data/\' target=\'_blank\' rel=\'noopener\' style=\'color:#4ec994;opacity:.8;text-decoration:none\'>Berkeley Earth &#x2197;</a> &middot; <a href=\'https://www.fifa.com/tournaments/mens/worldcup/statisticsandrecords\' target=\'_blank\' rel=\'noopener\' style=\'color:#4ec994;opacity:.8;text-decoration:none\'>FIFA Official Records &#x2197;</a> &middot; <a href=\'https://data.worldbank.org/indicator/SP.POP.TOTL\' target=\'_blank\' rel=\'noopener\' style=\'color:#4ec994;opacity:.8;text-decoration:none\'>World Bank Pop. &#x2197;</a></div>';
+  html+='<div class="rp-arrows"><button class="rp-arr" id="rp-prev"'+(i===0?' disabled':'')+'>&#8592; Prev</button><button class="rp-arr" id="rp-next"'+(i===WC.length-1?' disabled':'')+'>Next &#8594;</button></div>';
+  html+='<a class="rp-cta" href="museum.html">View in Museum &#8594;</a>';
+  html+='</div>';
+
+  detailEl.innerHTML=html;
+  setTimeout(function(){var b=document.getElementById('rpbar');if(b)b.style.width=bw+'%';},80);
+  document.getElementById('rp-prev').addEventListener('click',function(){openDetail(i-1);});
+  document.getElementById('rp-next').addEventListener('click',function(){openDetail(i+1);});
+  highlightISO(t.iso);
+}
+
+async function initMap(){
+  try{
+    var world=await d3.json("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json");
+    var el=document.getElementById('map');
+    var wrap=el.parentElement;
+    var W=wrap.clientWidth||700;
+    var W=960, H=460;
+    mapSvg=d3.select('#map').attr('viewBox','0 0 960 460').attr('preserveAspectRatio','xMidYMid meet').style('width','100%').style('height','100%');
+    var proj=d3.geoNaturalEarth1().scale(145).translate([480,240]);
+    var path=d3.geoPath().projection(proj);
+    var ctrs=topojson.feature(world,world.objects.countries);
+    mapSvg.append('rect').attr('width',960).attr('height',460).attr('fill','#dbeafe');
+    mapG=mapSvg.append('g');
+    mapG.append('path').datum(d3.geoGraticule()()).attr('d',path).attr('fill','none').attr('stroke','rgba(100,150,220,.12)').attr('stroke-width',.4);
+
+    mapPaths=mapG.selectAll('path.c').data(ctrs.features).enter().append('path').attr('class','c')
+      .attr('d',path).attr('fill',function(d){return getCountryColor(+d.id);}).attr('stroke','#fff').attr('stroke-width',.5)
+      .style('cursor',function(d){return HOST_NUMS.has(+d.id)?'pointer':'default';})
+      .on('mouseover',function(event,d){
+        var num=+d.id;if(!HOST_NUMS.has(num))return;
+        var t=latestByISO(num);if(!t)return;
+        d3.select(this).attr('stroke','#047857').attr('stroke-width',1.5);
+        var tip=document.getElementById('map-tip');var rect=wrap.getBoundingClientRect();
+        var co2=t.co2!==null?(t.co2>=0?'+'+t.co2+'%':t.co2+'%'):'N/A';
+        tip.innerHTML='<strong>'+t.host+' '+t.year+'</strong><br/>🏆 '+t.win+' &nbsp;|&nbsp; CO₂: '+co2;
+        tip.style.left=(event.clientX-rect.left+14)+'px';tip.style.top=(event.clientY-rect.top-50)+'px';tip.style.opacity='1';
+      })
+      .on('mousemove',function(event){var rect=wrap.getBoundingClientRect();var tip=document.getElementById('map-tip');tip.style.left=(event.clientX-rect.left+14)+'px';tip.style.top=(event.clientY-rect.top-50)+'px';})
+      .on('mouseout',function(event,d){
+        document.getElementById('map-tip').style.opacity='0';
+        var num=+d.id;
+        d3.select(this).attr('stroke',(selIdx!==null&&WC[selIdx]&&WC[selIdx].iso===num)?'#047857':'#fff').attr('stroke-width',(selIdx!==null&&WC[selIdx]&&WC[selIdx].iso===num)?2:.5);
+      })
+      .on('click',function(event,d){var num=+d.id;if(!HOST_NUMS.has(num))return;var t=latestByISO(num);if(t)openDetail(WC.indexOf(t));});
+
+    mapG.append('path').datum(topojson.mesh(world,world.objects.countries,function(a,b){return a!==b;})).attr('d',path).attr('fill','none').attr('stroke','#fff').attr('stroke-width',.35);
+
+    mapZoom=d3.zoom().scaleExtent([1,10]).translateExtent([[0,0],[960,460]])
+      .on('zoom',function(event){mapG.attr('transform',event.transform);mapG.selectAll('path.c').attr('stroke-width',.5/event.transform.k);});
+    mapSvg.call(mapZoom);
+    mapSvg.on('dblclick.zoom',null);
+    document.getElementById('mc-in').addEventListener('click',function(){mapSvg.transition().duration(300).call(mapZoom.scaleBy,1.5);});
+    document.getElementById('mc-out').addEventListener('click',function(){mapSvg.transition().duration(300).call(mapZoom.scaleBy,1/1.5);});
+    document.getElementById('mc-rst').addEventListener('click',function(){mapSvg.transition().duration(400).call(mapZoom.transform,d3.zoomIdentity);updateMapColors();selIdx=null;});
+    document.getElementById('map-load').style.display='none';
+    el.style.display='block';
+  }catch(e){document.getElementById('map-load').innerHTML='<span style="font-size:1.4rem">🗺️</span><span>Map unavailable</span>';}
+}
+
+buildTimeline(WC);
+buildChips();
+initMap();
+</script>
+</body>
+</html>
