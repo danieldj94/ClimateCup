@@ -1,0 +1,2408 @@
+{
+  "_meta": {
+    "version": "1.0",
+    "lastUpdated": "2026-07-06",
+    "notes": "Team status and knockout fixtures VERIFIED from ESPN bracket (espn.com/soccer/bracket) on Jul 6, 2026. Group-stage venue assignments in the fixtures array are placeholders based on group regional clusters and have NOT been individually verified — flagged per team with `verified` field. Update this JSON to reflect current tournament state.",
+    "sources": {
+      "baseCamps": "https://www.ussoccer.com/stories/2026/06/usmnt/where-are-fifa-world-cup-2026-team-base-camp-training-sites",
+      "emissionFactors": {
+        "charterFlight_gPerPaxKm": 118,
+        "coachBus_gPerPaxKm": 75,
+        "note": "Charter flight factor from carbonlabel.org (includes 1.7× non-CO2 radiative forcing multiplier). Bus factor mid-range from UK DEFRA 2020 conversion factors."
+      },
+      "travelPartySize": 60
+    },
+    "stadiums": {
+      "atl": {
+        "name": "Mercedes-Benz Stadium",
+        "city": "Atlanta",
+        "lat": 33.755,
+        "lon": -84.4
+      },
+      "bos": {
+        "name": "Gillette Stadium",
+        "city": "Foxborough / Boston",
+        "lat": 42.091,
+        "lon": -71.264
+      },
+      "dal": {
+        "name": "AT&T Stadium",
+        "city": "Arlington / Dallas",
+        "lat": 32.747,
+        "lon": -97.093
+      },
+      "hou": {
+        "name": "NRG Stadium",
+        "city": "Houston",
+        "lat": 29.685,
+        "lon": -95.41
+      },
+      "kan": {
+        "name": "Arrowhead Stadium",
+        "city": "Kansas City",
+        "lat": 39.049,
+        "lon": -94.484
+      },
+      "lax": {
+        "name": "SoFi Stadium",
+        "city": "Los Angeles / Inglewood",
+        "lat": 33.953,
+        "lon": -118.339
+      },
+      "mia": {
+        "name": "Hard Rock Stadium",
+        "city": "Miami Gardens",
+        "lat": 25.958,
+        "lon": -80.239
+      },
+      "nyc": {
+        "name": "MetLife Stadium",
+        "city": "New York / New Jersey",
+        "lat": 40.814,
+        "lon": -74.074
+      },
+      "phi": {
+        "name": "Lincoln Financial Field",
+        "city": "Philadelphia",
+        "lat": 39.901,
+        "lon": -75.168
+      },
+      "sfo": {
+        "name": "Levi's Stadium",
+        "city": "SF Bay / Santa Clara",
+        "lat": 37.403,
+        "lon": -121.97
+      },
+      "sea": {
+        "name": "Lumen Field",
+        "city": "Seattle",
+        "lat": 47.595,
+        "lon": -122.332
+      },
+      "tor": {
+        "name": "BMO Field",
+        "city": "Toronto",
+        "lat": 43.633,
+        "lon": -79.418
+      },
+      "van": {
+        "name": "BC Place",
+        "city": "Vancouver",
+        "lat": 49.276,
+        "lon": -123.112
+      },
+      "mex": {
+        "name": "Estadio Azteca",
+        "city": "Mexico City",
+        "lat": 19.303,
+        "lon": -99.15
+      },
+      "gua": {
+        "name": "Estadio Akron",
+        "city": "Guadalajara / Zapopan",
+        "lat": 20.68,
+        "lon": -103.46
+      },
+      "mty": {
+        "name": "Estadio BBVA",
+        "city": "Monterrey",
+        "lat": 25.669,
+        "lon": -100.244
+      }
+    }
+  },
+  "teams": [
+    {
+      "code": "USA",
+      "name": "United States",
+      "flag": "🇺🇸",
+      "group": "D",
+      "status": "r16",
+      "confederation": "CONCACAF",
+      "base": {
+        "name": "Great Park Sports Complex",
+        "city": "Irvine, CA",
+        "lat": 33.665,
+        "lon": -117.822
+      },
+      "fixtures": [
+        {
+          "stadium": "lax",
+          "stage": "Group",
+          "date": "Jun 12",
+          "played": true,
+          "mode": "bus"
+        },
+        {
+          "stadium": "sea",
+          "stage": "Group",
+          "date": "Jun 18",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "lax",
+          "stage": "Group",
+          "date": "Jun 24",
+          "played": true,
+          "mode": "bus"
+        },
+        {
+          "stadium": "sfo",
+          "stage": "R32",
+          "date": "Jul 1",
+          "played": true,
+          "mode": "charter",
+          "opponent": "Bosnia",
+          "result": "2-0 W"
+        },
+        {
+          "stadium": "sea",
+          "stage": "R16",
+          "date": "Jul 6",
+          "played": false,
+          "mode": "charter",
+          "opponent": "Belgium",
+          "result": "upcoming"
+        }
+      ],
+      "verified": "knockout-verified"
+    },
+    {
+      "code": "ARG",
+      "name": "Argentina",
+      "flag": "🇦🇷",
+      "group": "J",
+      "status": "r16",
+      "confederation": "CONMEBOL",
+      "base": {
+        "name": "Sporting KC Training Center",
+        "city": "Kansas City, KS",
+        "lat": 39.121,
+        "lon": -94.826
+      },
+      "fixtures": [
+        {
+          "stadium": "kan",
+          "stage": "Group",
+          "date": "Jun 16",
+          "played": true,
+          "mode": "bus"
+        },
+        {
+          "stadium": "hou",
+          "stage": "Group",
+          "date": "Jun 22",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "dal",
+          "stage": "Group",
+          "date": "Jun 26",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "mia",
+          "stage": "R32",
+          "date": "Jul 3",
+          "played": true,
+          "mode": "charter",
+          "opponent": "Cape Verde",
+          "result": "3-2 W (AET)"
+        },
+        {
+          "stadium": "atl",
+          "stage": "R16",
+          "date": "Jul 7",
+          "played": false,
+          "mode": "charter",
+          "opponent": "Egypt",
+          "result": "upcoming"
+        }
+      ],
+      "verified": "knockout-verified"
+    },
+    {
+      "code": "BRA",
+      "name": "Brazil",
+      "flag": "🇧🇷",
+      "group": "E",
+      "status": "eliminated",
+      "confederation": "CONMEBOL",
+      "base": {
+        "name": "Columbia Park Training Facility",
+        "city": "Morristown, NJ",
+        "lat": 40.796,
+        "lon": -74.481
+      },
+      "fixtures": [
+        {
+          "stadium": "nyc",
+          "stage": "Group",
+          "date": "Jun 13",
+          "played": true,
+          "mode": "bus"
+        },
+        {
+          "stadium": "phi",
+          "stage": "Group",
+          "date": "Jun 19",
+          "played": true,
+          "mode": "bus"
+        },
+        {
+          "stadium": "nyc",
+          "stage": "Group",
+          "date": "Jun 25",
+          "played": true,
+          "mode": "bus"
+        },
+        {
+          "stadium": "lax",
+          "stage": "R32",
+          "date": "Jun 29",
+          "played": true,
+          "mode": "charter",
+          "opponent": "Japan",
+          "result": "2-1 W"
+        },
+        {
+          "stadium": "nyc",
+          "stage": "R16",
+          "date": "Jul 5",
+          "played": true,
+          "mode": "charter",
+          "opponent": "Norway",
+          "result": "1-2 L"
+        }
+      ],
+      "verified": "knockout-verified"
+    },
+    {
+      "code": "MEX",
+      "name": "Mexico",
+      "flag": "🇲🇽",
+      "group": "A",
+      "status": "eliminated",
+      "confederation": "CONCACAF",
+      "base": {
+        "name": "Centro de Alto Rendimiento (CAR)",
+        "city": "Mexico City",
+        "lat": 19.303,
+        "lon": -99.198
+      },
+      "fixtures": [
+        {
+          "stadium": "mex",
+          "stage": "Group",
+          "date": "Jun 11",
+          "played": true,
+          "mode": "bus"
+        },
+        {
+          "stadium": "gua",
+          "stage": "Group",
+          "date": "Jun 18",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "mty",
+          "stage": "Group",
+          "date": "Jun 24",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "mex",
+          "stage": "R32",
+          "date": "Jul 1",
+          "played": true,
+          "mode": "charter",
+          "opponent": "Ecuador",
+          "result": "2-0 W"
+        },
+        {
+          "stadium": "mex",
+          "stage": "R16",
+          "date": "Jul 6",
+          "played": true,
+          "mode": "charter",
+          "opponent": "England",
+          "result": "2-3 L"
+        }
+      ],
+      "verified": "knockout-verified"
+    },
+    {
+      "code": "CAN",
+      "name": "Canada",
+      "flag": "🇨🇦",
+      "group": "B",
+      "status": "eliminated",
+      "confederation": "CONCACAF",
+      "base": {
+        "name": "National Soccer Development Centre",
+        "city": "Vancouver, BC",
+        "lat": 49.246,
+        "lon": -123.187
+      },
+      "fixtures": [
+        {
+          "stadium": "tor",
+          "stage": "Group",
+          "date": "Jun 12",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "van",
+          "stage": "Group",
+          "date": "Jun 18",
+          "played": true,
+          "mode": "bus"
+        },
+        {
+          "stadium": "tor",
+          "stage": "Group",
+          "date": "Jun 24",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "lax",
+          "stage": "R32",
+          "date": "Jun 28",
+          "played": true,
+          "mode": "charter",
+          "opponent": "South Africa",
+          "result": "1-0 W"
+        },
+        {
+          "stadium": "hou",
+          "stage": "R16",
+          "date": "Jul 4",
+          "played": true,
+          "mode": "charter",
+          "opponent": "Morocco",
+          "result": "0-3 L"
+        }
+      ],
+      "verified": "knockout-verified"
+    },
+    {
+      "code": "FRA",
+      "name": "France",
+      "flag": "🇫🇷",
+      "group": "F",
+      "status": "qf",
+      "confederation": "UEFA",
+      "base": {
+        "name": "Bentley University",
+        "city": "Waltham, MA",
+        "lat": 42.386,
+        "lon": -71.22
+      },
+      "fixtures": [
+        {
+          "stadium": "bos",
+          "stage": "Group",
+          "date": "Jun 14",
+          "played": true,
+          "mode": "bus"
+        },
+        {
+          "stadium": "phi",
+          "stage": "Group",
+          "date": "Jun 20",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "nyc",
+          "stage": "Group",
+          "date": "Jun 25",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "nyc",
+          "stage": "R32",
+          "date": "Jun 30",
+          "played": true,
+          "mode": "charter",
+          "opponent": "Sweden",
+          "result": "3-0 W"
+        },
+        {
+          "stadium": "phi",
+          "stage": "R16",
+          "date": "Jul 4",
+          "played": true,
+          "mode": "charter",
+          "opponent": "Paraguay",
+          "result": "1-0 W"
+        },
+        {
+          "stadium": "bos",
+          "stage": "QF",
+          "date": "Jul 9",
+          "played": false,
+          "mode": "charter",
+          "opponent": "Morocco",
+          "result": "upcoming"
+        }
+      ],
+      "verified": "knockout-verified"
+    },
+    {
+      "code": "ENG",
+      "name": "England",
+      "flag": "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
+      "group": "G",
+      "status": "qf",
+      "confederation": "UEFA",
+      "base": {
+        "name": "Swope Soccer Village",
+        "city": "Kansas City, MO",
+        "lat": 39.017,
+        "lon": -94.537
+      },
+      "fixtures": [
+        {
+          "stadium": "kan",
+          "stage": "Group",
+          "date": "Jun 15",
+          "played": true,
+          "mode": "bus"
+        },
+        {
+          "stadium": "dal",
+          "stage": "Group",
+          "date": "Jun 21",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "atl",
+          "stage": "Group",
+          "date": "Jun 27",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "atl",
+          "stage": "R32",
+          "date": "Jul 1",
+          "played": true,
+          "mode": "charter",
+          "opponent": "Congo DR",
+          "result": "2-1 W"
+        },
+        {
+          "stadium": "mex",
+          "stage": "R16",
+          "date": "Jul 6",
+          "played": true,
+          "mode": "charter",
+          "opponent": "Mexico",
+          "result": "3-2 W"
+        },
+        {
+          "stadium": "mia",
+          "stage": "QF",
+          "date": "Jul 11",
+          "played": false,
+          "mode": "charter",
+          "opponent": "Norway",
+          "result": "upcoming"
+        }
+      ],
+      "verified": "knockout-verified"
+    },
+    {
+      "code": "GER",
+      "name": "Germany",
+      "flag": "🇩🇪",
+      "group": "H",
+      "status": "eliminated",
+      "confederation": "UEFA",
+      "base": {
+        "name": "Wake Forest University",
+        "city": "Winston-Salem, NC",
+        "lat": 36.132,
+        "lon": -80.276
+      },
+      "fixtures": [
+        {
+          "stadium": "atl",
+          "stage": "Group",
+          "date": "Jun 15",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "mia",
+          "stage": "Group",
+          "date": "Jun 21",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "phi",
+          "stage": "Group",
+          "date": "Jun 27",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "bos",
+          "stage": "R32",
+          "date": "Jun 30",
+          "played": true,
+          "mode": "charter",
+          "opponent": "Paraguay",
+          "result": "1-1 L (pens 3-4)"
+        }
+      ],
+      "verified": "knockout-verified"
+    },
+    {
+      "code": "ESP",
+      "name": "Spain",
+      "flag": "🇪🇸",
+      "group": "C",
+      "status": "r16",
+      "confederation": "UEFA",
+      "base": {
+        "name": "Baylor School",
+        "city": "Chattanooga, TN",
+        "lat": 35.081,
+        "lon": -85.322
+      },
+      "fixtures": [
+        {
+          "stadium": "atl",
+          "stage": "Group",
+          "date": "Jun 13",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "nyc",
+          "stage": "Group",
+          "date": "Jun 19",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "mia",
+          "stage": "Group",
+          "date": "Jun 25",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "lax",
+          "stage": "R32",
+          "date": "Jul 2",
+          "played": true,
+          "mode": "charter",
+          "opponent": "Austria",
+          "result": "3-0 W"
+        },
+        {
+          "stadium": "dal",
+          "stage": "R16",
+          "date": "Jul 6",
+          "played": false,
+          "mode": "charter",
+          "opponent": "Portugal",
+          "result": "upcoming"
+        }
+      ],
+      "verified": "knockout-verified"
+    },
+    {
+      "code": "POR",
+      "name": "Portugal",
+      "flag": "🇵🇹",
+      "group": "I",
+      "status": "r16",
+      "confederation": "UEFA",
+      "base": {
+        "name": "Gardens North County District Park",
+        "city": "Palm Beach Gardens, FL",
+        "lat": 26.865,
+        "lon": -80.185
+      },
+      "fixtures": [
+        {
+          "stadium": "mia",
+          "stage": "Group",
+          "date": "Jun 16",
+          "played": true,
+          "mode": "bus"
+        },
+        {
+          "stadium": "nyc",
+          "stage": "Group",
+          "date": "Jun 22",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "atl",
+          "stage": "Group",
+          "date": "Jun 26",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "tor",
+          "stage": "R32",
+          "date": "Jul 1",
+          "played": true,
+          "mode": "charter",
+          "opponent": "Croatia",
+          "result": "2-1 W"
+        },
+        {
+          "stadium": "dal",
+          "stage": "R16",
+          "date": "Jul 6",
+          "played": false,
+          "mode": "charter",
+          "opponent": "Spain",
+          "result": "upcoming"
+        }
+      ],
+      "verified": "knockout-verified"
+    },
+    {
+      "code": "NED",
+      "name": "Netherlands",
+      "flag": "🇳🇱",
+      "group": "K",
+      "status": "eliminated",
+      "confederation": "UEFA",
+      "base": {
+        "name": "KC Current Training Facility",
+        "city": "Riverside, MO",
+        "lat": 39.174,
+        "lon": -94.615
+      },
+      "fixtures": [
+        {
+          "stadium": "kan",
+          "stage": "Group",
+          "date": "Jun 17",
+          "played": true,
+          "mode": "bus"
+        },
+        {
+          "stadium": "sea",
+          "stage": "Group",
+          "date": "Jun 23",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "sfo",
+          "stage": "Group",
+          "date": "Jun 27",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "gua",
+          "stage": "R32",
+          "date": "Jun 30",
+          "played": true,
+          "mode": "charter",
+          "opponent": "Morocco",
+          "result": "1-1 L (pens 2-3)"
+        }
+      ],
+      "verified": "knockout-verified"
+    },
+    {
+      "code": "BEL",
+      "name": "Belgium",
+      "flag": "🇧🇪",
+      "group": "L",
+      "status": "r16",
+      "confederation": "UEFA",
+      "base": {
+        "name": "Seattle Sounders Performance Centre",
+        "city": "Renton, WA",
+        "lat": 47.463,
+        "lon": -122.215
+      },
+      "fixtures": [
+        {
+          "stadium": "sea",
+          "stage": "Group",
+          "date": "Jun 17",
+          "played": true,
+          "mode": "bus"
+        },
+        {
+          "stadium": "van",
+          "stage": "Group",
+          "date": "Jun 23",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "sfo",
+          "stage": "Group",
+          "date": "Jun 27",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "sea",
+          "stage": "R32",
+          "date": "Jul 1",
+          "played": true,
+          "mode": "charter",
+          "opponent": "Senegal",
+          "result": "3-2 W (AET)"
+        },
+        {
+          "stadium": "sea",
+          "stage": "R16",
+          "date": "Jul 6",
+          "played": false,
+          "mode": "charter",
+          "opponent": "USA",
+          "result": "upcoming"
+        }
+      ],
+      "verified": "knockout-verified"
+    },
+    {
+      "code": "CRO",
+      "name": "Croatia",
+      "flag": "🇭🇷",
+      "group": "E",
+      "status": "eliminated",
+      "confederation": "UEFA",
+      "base": {
+        "name": "Episcopal High School",
+        "city": "Alexandria, VA",
+        "lat": 38.821,
+        "lon": -77.114
+      },
+      "fixtures": [
+        {
+          "stadium": "phi",
+          "stage": "Group",
+          "date": "Jun 13",
+          "played": true,
+          "mode": "bus"
+        },
+        {
+          "stadium": "nyc",
+          "stage": "Group",
+          "date": "Jun 19",
+          "played": true,
+          "mode": "bus"
+        },
+        {
+          "stadium": "atl",
+          "stage": "Group",
+          "date": "Jun 25",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "tor",
+          "stage": "R32",
+          "date": "Jul 1",
+          "played": true,
+          "mode": "charter",
+          "opponent": "Portugal",
+          "result": "1-2 L"
+        }
+      ],
+      "verified": "knockout-verified"
+    },
+    {
+      "code": "URU",
+      "name": "Uruguay",
+      "flag": "🇺🇾",
+      "group": "H",
+      "status": "eliminated",
+      "confederation": "CONMEBOL",
+      "base": {
+        "name": "Mayakoba Training Center",
+        "city": "Playa del Carmen, Mexico",
+        "lat": 20.688,
+        "lon": -87.083
+      },
+      "fixtures": [
+        {
+          "stadium": "mia",
+          "stage": "Group",
+          "date": "Jun 15",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "atl",
+          "stage": "Group",
+          "date": "Jun 21",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "phi",
+          "stage": "Group",
+          "date": "Jun 27",
+          "played": true,
+          "mode": "charter"
+        }
+      ],
+      "verified": "group-only"
+    },
+    {
+      "code": "COL",
+      "name": "Colombia",
+      "flag": "🇨🇴",
+      "group": "A",
+      "status": "r16",
+      "confederation": "CONMEBOL",
+      "base": {
+        "name": "Academia Atlas FC",
+        "city": "Zapopan, Mexico",
+        "lat": 20.72,
+        "lon": -103.416
+      },
+      "fixtures": [
+        {
+          "stadium": "gua",
+          "stage": "Group",
+          "date": "Jun 12",
+          "played": true,
+          "mode": "bus"
+        },
+        {
+          "stadium": "mex",
+          "stage": "Group",
+          "date": "Jun 18",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "mty",
+          "stage": "Group",
+          "date": "Jun 24",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "sfo",
+          "stage": "R32",
+          "date": "Jul 2",
+          "played": true,
+          "mode": "charter",
+          "opponent": "Ghana",
+          "result": "1-0 W"
+        },
+        {
+          "stadium": "van",
+          "stage": "R16",
+          "date": "Jul 7",
+          "played": false,
+          "mode": "charter",
+          "opponent": "Switzerland",
+          "result": "upcoming"
+        }
+      ],
+      "verified": "knockout-verified"
+    },
+    {
+      "code": "ECU",
+      "name": "Ecuador",
+      "flag": "🇪🇨",
+      "group": "D",
+      "status": "eliminated",
+      "confederation": "CONMEBOL",
+      "base": {
+        "name": "Columbus Crew Performance Center",
+        "city": "Columbus, OH",
+        "lat": 39.968,
+        "lon": -83.014
+      },
+      "fixtures": [
+        {
+          "stadium": "lax",
+          "stage": "Group",
+          "date": "Jun 12",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "sea",
+          "stage": "Group",
+          "date": "Jun 18",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "lax",
+          "stage": "Group",
+          "date": "Jun 24",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "mex",
+          "stage": "R32",
+          "date": "Jul 1",
+          "played": true,
+          "mode": "charter",
+          "opponent": "Mexico",
+          "result": "0-2 L"
+        }
+      ],
+      "verified": "knockout-verified"
+    },
+    {
+      "code": "PAR",
+      "name": "Paraguay",
+      "flag": "🇵🇾",
+      "group": "K",
+      "status": "eliminated",
+      "confederation": "CONMEBOL",
+      "base": {
+        "name": "Spartan Soccer Complex",
+        "city": "San Jose, CA",
+        "lat": 37.335,
+        "lon": -121.881
+      },
+      "fixtures": [
+        {
+          "stadium": "sfo",
+          "stage": "Group",
+          "date": "Jun 17",
+          "played": true,
+          "mode": "bus"
+        },
+        {
+          "stadium": "sea",
+          "stage": "Group",
+          "date": "Jun 23",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "kan",
+          "stage": "Group",
+          "date": "Jun 27",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "bos",
+          "stage": "R32",
+          "date": "Jun 30",
+          "played": true,
+          "mode": "charter",
+          "opponent": "Germany",
+          "result": "1-1 W (pens 4-3)"
+        },
+        {
+          "stadium": "phi",
+          "stage": "R16",
+          "date": "Jul 4",
+          "played": true,
+          "mode": "charter",
+          "opponent": "France",
+          "result": "0-1 L"
+        }
+      ],
+      "verified": "knockout-verified"
+    },
+    {
+      "code": "JPN",
+      "name": "Japan",
+      "flag": "🇯🇵",
+      "group": "C",
+      "status": "eliminated",
+      "confederation": "AFC",
+      "base": {
+        "name": "Nashville SC Training Center",
+        "city": "Nashville, TN",
+        "lat": 36.163,
+        "lon": -86.781
+      },
+      "fixtures": [
+        {
+          "stadium": "atl",
+          "stage": "Group",
+          "date": "Jun 13",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "nyc",
+          "stage": "Group",
+          "date": "Jun 19",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "mia",
+          "stage": "Group",
+          "date": "Jun 25",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "lax",
+          "stage": "R32",
+          "date": "Jun 29",
+          "played": true,
+          "mode": "charter",
+          "opponent": "Brazil",
+          "result": "1-2 L"
+        }
+      ],
+      "verified": "knockout-verified"
+    },
+    {
+      "code": "KOR",
+      "name": "Korea Republic",
+      "flag": "🇰🇷",
+      "group": "F",
+      "status": "eliminated",
+      "confederation": "AFC",
+      "base": {
+        "name": "Chivas Verde Valle",
+        "city": "Zapopan, Mexico",
+        "lat": 20.72,
+        "lon": -103.416
+      },
+      "fixtures": [
+        {
+          "stadium": "bos",
+          "stage": "Group",
+          "date": "Jun 14",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "phi",
+          "stage": "Group",
+          "date": "Jun 20",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "nyc",
+          "stage": "Group",
+          "date": "Jun 25",
+          "played": true,
+          "mode": "charter"
+        }
+      ],
+      "verified": "group-only"
+    },
+    {
+      "code": "AUS",
+      "name": "Australia",
+      "flag": "🇦🇺",
+      "group": "L",
+      "status": "eliminated",
+      "confederation": "AFC",
+      "base": {
+        "name": "Oakland Roots Training Facility",
+        "city": "Alameda, CA",
+        "lat": 37.774,
+        "lon": -122.259
+      },
+      "fixtures": [
+        {
+          "stadium": "sea",
+          "stage": "Group",
+          "date": "Jun 17",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "van",
+          "stage": "Group",
+          "date": "Jun 23",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "sfo",
+          "stage": "Group",
+          "date": "Jun 27",
+          "played": true,
+          "mode": "bus"
+        },
+        {
+          "stadium": "dal",
+          "stage": "R32",
+          "date": "Jul 3",
+          "played": true,
+          "mode": "charter",
+          "opponent": "Egypt",
+          "result": "1-1 L (pens 2-4)"
+        }
+      ],
+      "verified": "knockout-verified"
+    },
+    {
+      "code": "IRN",
+      "name": "IR Iran",
+      "flag": "🇮🇷",
+      "group": "G",
+      "status": "eliminated",
+      "confederation": "AFC",
+      "base": {
+        "name": "Centro Xoloitzcuintle",
+        "city": "Tijuana, Mexico",
+        "lat": 32.516,
+        "lon": -117.038
+      },
+      "fixtures": [
+        {
+          "stadium": "kan",
+          "stage": "Group",
+          "date": "Jun 15",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "dal",
+          "stage": "Group",
+          "date": "Jun 21",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "atl",
+          "stage": "Group",
+          "date": "Jun 27",
+          "played": true,
+          "mode": "charter"
+        }
+      ],
+      "verified": "group-only"
+    },
+    {
+      "code": "SAU",
+      "name": "Saudi Arabia",
+      "flag": "🇸🇦",
+      "group": "I",
+      "status": "eliminated",
+      "confederation": "AFC",
+      "base": {
+        "name": "Austin FC Stadium",
+        "city": "Austin, TX",
+        "lat": 30.388,
+        "lon": -97.719
+      },
+      "fixtures": [
+        {
+          "stadium": "mia",
+          "stage": "Group",
+          "date": "Jun 16",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "nyc",
+          "stage": "Group",
+          "date": "Jun 22",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "atl",
+          "stage": "Group",
+          "date": "Jun 26",
+          "played": true,
+          "mode": "charter"
+        }
+      ],
+      "verified": "group-only"
+    },
+    {
+      "code": "JOR",
+      "name": "Jordan",
+      "flag": "🇯🇴",
+      "group": "B",
+      "status": "eliminated",
+      "confederation": "AFC",
+      "base": {
+        "name": "University of Portland",
+        "city": "Portland, OR",
+        "lat": 45.571,
+        "lon": -122.727
+      },
+      "fixtures": [
+        {
+          "stadium": "tor",
+          "stage": "Group",
+          "date": "Jun 12",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "van",
+          "stage": "Group",
+          "date": "Jun 18",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "tor",
+          "stage": "Group",
+          "date": "Jun 24",
+          "played": true,
+          "mode": "charter"
+        }
+      ],
+      "verified": "group-only"
+    },
+    {
+      "code": "UZB",
+      "name": "Uzbekistan",
+      "flag": "🇺🇿",
+      "group": "J",
+      "status": "eliminated",
+      "confederation": "AFC",
+      "base": {
+        "name": "Marietta Training Complex",
+        "city": "Marietta, GA",
+        "lat": 33.953,
+        "lon": -84.55
+      },
+      "fixtures": [
+        {
+          "stadium": "kan",
+          "stage": "Group",
+          "date": "Jun 16",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "hou",
+          "stage": "Group",
+          "date": "Jun 22",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "dal",
+          "stage": "Group",
+          "date": "Jun 26",
+          "played": true,
+          "mode": "charter"
+        }
+      ],
+      "verified": "group-only"
+    },
+    {
+      "code": "QAT",
+      "name": "Qatar",
+      "flag": "🇶🇦",
+      "group": "I",
+      "status": "eliminated",
+      "confederation": "AFC",
+      "base": {
+        "name": "Westmont College",
+        "city": "Santa Barbara, CA",
+        "lat": 34.446,
+        "lon": -119.663
+      },
+      "fixtures": [
+        {
+          "stadium": "mia",
+          "stage": "Group",
+          "date": "Jun 16",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "nyc",
+          "stage": "Group",
+          "date": "Jun 22",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "atl",
+          "stage": "Group",
+          "date": "Jun 26",
+          "played": true,
+          "mode": "charter"
+        }
+      ],
+      "verified": "group-only"
+    },
+    {
+      "code": "MAR",
+      "name": "Morocco",
+      "flag": "🇲🇦",
+      "group": "E",
+      "status": "qf",
+      "confederation": "CAF",
+      "base": {
+        "name": "The Pingry School",
+        "city": "Basking Ridge, NJ",
+        "lat": 40.696,
+        "lon": -74.535
+      },
+      "fixtures": [
+        {
+          "stadium": "nyc",
+          "stage": "Group",
+          "date": "Jun 13",
+          "played": true,
+          "mode": "bus"
+        },
+        {
+          "stadium": "phi",
+          "stage": "Group",
+          "date": "Jun 19",
+          "played": true,
+          "mode": "bus"
+        },
+        {
+          "stadium": "atl",
+          "stage": "Group",
+          "date": "Jun 25",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "gua",
+          "stage": "R32",
+          "date": "Jun 30",
+          "played": true,
+          "mode": "charter",
+          "opponent": "Netherlands",
+          "result": "1-1 W (pens 3-2)"
+        },
+        {
+          "stadium": "hou",
+          "stage": "R16",
+          "date": "Jul 4",
+          "played": true,
+          "mode": "charter",
+          "opponent": "Canada",
+          "result": "3-0 W"
+        },
+        {
+          "stadium": "bos",
+          "stage": "QF",
+          "date": "Jul 9",
+          "played": false,
+          "mode": "charter",
+          "opponent": "France",
+          "result": "upcoming"
+        }
+      ],
+      "verified": "knockout-verified"
+    },
+    {
+      "code": "SEN",
+      "name": "Senegal",
+      "flag": "🇸🇳",
+      "group": "D",
+      "status": "eliminated",
+      "confederation": "CAF",
+      "base": {
+        "name": "Rutgers University",
+        "city": "Piscataway, NJ",
+        "lat": 40.523,
+        "lon": -74.457
+      },
+      "fixtures": [
+        {
+          "stadium": "lax",
+          "stage": "Group",
+          "date": "Jun 12",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "sea",
+          "stage": "Group",
+          "date": "Jun 18",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "lax",
+          "stage": "Group",
+          "date": "Jun 24",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "sea",
+          "stage": "R32",
+          "date": "Jul 1",
+          "played": true,
+          "mode": "charter",
+          "opponent": "Belgium",
+          "result": "2-3 L (AET)"
+        }
+      ],
+      "verified": "knockout-verified"
+    },
+    {
+      "code": "TUN",
+      "name": "Tunisia",
+      "flag": "🇹🇳",
+      "group": "A",
+      "status": "eliminated",
+      "confederation": "CAF",
+      "base": {
+        "name": "Rayados Training Center",
+        "city": "Santiago, Mexico",
+        "lat": 25.437,
+        "lon": -100.15
+      },
+      "fixtures": [
+        {
+          "stadium": "mex",
+          "stage": "Group",
+          "date": "Jun 11",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "gua",
+          "stage": "Group",
+          "date": "Jun 18",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "mty",
+          "stage": "Group",
+          "date": "Jun 24",
+          "played": true,
+          "mode": "bus"
+        }
+      ],
+      "verified": "group-only"
+    },
+    {
+      "code": "EGY",
+      "name": "Egypt",
+      "flag": "🇪🇬",
+      "group": "B",
+      "status": "r16",
+      "confederation": "CAF",
+      "base": {
+        "name": "Gonzaga University",
+        "city": "Spokane, WA",
+        "lat": 47.667,
+        "lon": -117.399
+      },
+      "fixtures": [
+        {
+          "stadium": "tor",
+          "stage": "Group",
+          "date": "Jun 12",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "van",
+          "stage": "Group",
+          "date": "Jun 18",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "tor",
+          "stage": "Group",
+          "date": "Jun 24",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "dal",
+          "stage": "R32",
+          "date": "Jul 3",
+          "played": true,
+          "mode": "charter",
+          "opponent": "Australia",
+          "result": "1-1 W (pens 4-2)"
+        },
+        {
+          "stadium": "atl",
+          "stage": "R16",
+          "date": "Jul 7",
+          "played": false,
+          "mode": "charter",
+          "opponent": "Argentina",
+          "result": "upcoming"
+        }
+      ],
+      "verified": "knockout-verified"
+    },
+    {
+      "code": "ALG",
+      "name": "Algeria",
+      "flag": "🇩🇿",
+      "group": "G",
+      "status": "eliminated",
+      "confederation": "CAF",
+      "base": {
+        "name": "University of Kansas",
+        "city": "Lawrence, KS",
+        "lat": 38.955,
+        "lon": -95.256
+      },
+      "fixtures": [
+        {
+          "stadium": "kan",
+          "stage": "Group",
+          "date": "Jun 15",
+          "played": true,
+          "mode": "bus"
+        },
+        {
+          "stadium": "dal",
+          "stage": "Group",
+          "date": "Jun 21",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "atl",
+          "stage": "Group",
+          "date": "Jun 27",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "van",
+          "stage": "R32",
+          "date": "Jul 2",
+          "played": true,
+          "mode": "charter",
+          "opponent": "Switzerland",
+          "result": "0-2 L"
+        }
+      ],
+      "verified": "knockout-verified"
+    },
+    {
+      "code": "CIV",
+      "name": "Côte d'Ivoire",
+      "flag": "🇨🇮",
+      "group": "H",
+      "status": "eliminated",
+      "confederation": "CAF",
+      "base": {
+        "name": "Philadelphia Union Stadium",
+        "city": "Chester, PA",
+        "lat": 39.833,
+        "lon": -75.379
+      },
+      "fixtures": [
+        {
+          "stadium": "atl",
+          "stage": "Group",
+          "date": "Jun 15",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "mia",
+          "stage": "Group",
+          "date": "Jun 21",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "phi",
+          "stage": "Group",
+          "date": "Jun 27",
+          "played": true,
+          "mode": "bus"
+        },
+        {
+          "stadium": "dal",
+          "stage": "R32",
+          "date": "Jul 1",
+          "played": true,
+          "mode": "charter",
+          "opponent": "Norway",
+          "result": "1-2 L"
+        }
+      ],
+      "verified": "knockout-verified"
+    },
+    {
+      "code": "GHA",
+      "name": "Ghana",
+      "flag": "🇬🇭",
+      "group": "C",
+      "status": "eliminated",
+      "confederation": "CAF",
+      "base": {
+        "name": "Bryant University",
+        "city": "Smithfield, RI",
+        "lat": 41.921,
+        "lon": -71.535
+      },
+      "fixtures": [
+        {
+          "stadium": "atl",
+          "stage": "Group",
+          "date": "Jun 13",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "nyc",
+          "stage": "Group",
+          "date": "Jun 19",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "mia",
+          "stage": "Group",
+          "date": "Jun 25",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "sfo",
+          "stage": "R32",
+          "date": "Jul 2",
+          "played": true,
+          "mode": "charter",
+          "opponent": "Colombia",
+          "result": "0-1 L"
+        }
+      ],
+      "verified": "knockout-verified"
+    },
+    {
+      "code": "RSA",
+      "name": "South Africa",
+      "flag": "🇿🇦",
+      "group": "J",
+      "status": "eliminated",
+      "confederation": "CAF",
+      "base": {
+        "name": "CF Pachuca - Universidad Del Futbol",
+        "city": "Hidalgo, Mexico",
+        "lat": 20.099,
+        "lon": -98.735
+      },
+      "fixtures": [
+        {
+          "stadium": "kan",
+          "stage": "Group",
+          "date": "Jun 16",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "hou",
+          "stage": "Group",
+          "date": "Jun 22",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "dal",
+          "stage": "Group",
+          "date": "Jun 26",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "lax",
+          "stage": "R32",
+          "date": "Jun 28",
+          "played": true,
+          "mode": "charter",
+          "opponent": "Canada",
+          "result": "0-1 L"
+        }
+      ],
+      "verified": "knockout-verified"
+    },
+    {
+      "code": "CPV",
+      "name": "Cabo Verde",
+      "flag": "🇨🇻",
+      "group": "K",
+      "status": "eliminated",
+      "confederation": "CAF",
+      "base": {
+        "name": "Waters Sportsplex",
+        "city": "Tampa, FL",
+        "lat": 28.019,
+        "lon": -82.475
+      },
+      "fixtures": [
+        {
+          "stadium": "sfo",
+          "stage": "Group",
+          "date": "Jun 17",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "sea",
+          "stage": "Group",
+          "date": "Jun 23",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "kan",
+          "stage": "Group",
+          "date": "Jun 27",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "mia",
+          "stage": "R32",
+          "date": "Jul 3",
+          "played": true,
+          "mode": "charter",
+          "opponent": "Argentina",
+          "result": "2-3 L (AET)"
+        }
+      ],
+      "verified": "knockout-verified"
+    },
+    {
+      "code": "COD",
+      "name": "Congo DR",
+      "flag": "🇨🇩",
+      "group": "F",
+      "status": "eliminated",
+      "confederation": "CAF",
+      "base": {
+        "name": "Houston Sports Park",
+        "city": "Houston, TX",
+        "lat": 29.594,
+        "lon": -95.284
+      },
+      "fixtures": [
+        {
+          "stadium": "bos",
+          "stage": "Group",
+          "date": "Jun 14",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "phi",
+          "stage": "Group",
+          "date": "Jun 20",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "nyc",
+          "stage": "Group",
+          "date": "Jun 25",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "atl",
+          "stage": "R32",
+          "date": "Jul 1",
+          "played": true,
+          "mode": "charter",
+          "opponent": "England",
+          "result": "1-2 L"
+        }
+      ],
+      "verified": "knockout-verified"
+    },
+    {
+      "code": "SUI",
+      "name": "Switzerland",
+      "flag": "🇨🇭",
+      "group": "D",
+      "status": "r16",
+      "confederation": "UEFA",
+      "base": {
+        "name": "SDJA Athletics",
+        "city": "San Diego, CA",
+        "lat": 32.91,
+        "lon": -117.192
+      },
+      "fixtures": [
+        {
+          "stadium": "lax",
+          "stage": "Group",
+          "date": "Jun 12",
+          "played": true,
+          "mode": "bus"
+        },
+        {
+          "stadium": "sea",
+          "stage": "Group",
+          "date": "Jun 18",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "lax",
+          "stage": "Group",
+          "date": "Jun 24",
+          "played": true,
+          "mode": "bus"
+        },
+        {
+          "stadium": "van",
+          "stage": "R32",
+          "date": "Jul 2",
+          "played": true,
+          "mode": "charter",
+          "opponent": "Algeria",
+          "result": "2-0 W"
+        },
+        {
+          "stadium": "van",
+          "stage": "R16",
+          "date": "Jul 7",
+          "played": false,
+          "mode": "charter",
+          "opponent": "Colombia",
+          "result": "upcoming"
+        }
+      ],
+      "verified": "knockout-verified"
+    },
+    {
+      "code": "AUT",
+      "name": "Austria",
+      "flag": "🇦🇹",
+      "group": "A",
+      "status": "eliminated",
+      "confederation": "UEFA",
+      "base": {
+        "name": "UC Santa Barbara",
+        "city": "Santa Barbara, CA",
+        "lat": 34.412,
+        "lon": -119.849
+      },
+      "fixtures": [
+        {
+          "stadium": "mex",
+          "stage": "Group",
+          "date": "Jun 11",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "gua",
+          "stage": "Group",
+          "date": "Jun 18",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "mty",
+          "stage": "Group",
+          "date": "Jun 24",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "lax",
+          "stage": "R32",
+          "date": "Jul 2",
+          "played": true,
+          "mode": "charter",
+          "opponent": "Spain",
+          "result": "0-3 L"
+        }
+      ],
+      "verified": "knockout-verified"
+    },
+    {
+      "code": "TUR",
+      "name": "Türkiye",
+      "flag": "🇹🇷",
+      "group": "B",
+      "status": "eliminated",
+      "confederation": "UEFA",
+      "base": {
+        "name": "Arizona Athletic Grounds",
+        "city": "Mesa, AZ",
+        "lat": 33.393,
+        "lon": -111.716
+      },
+      "fixtures": [
+        {
+          "stadium": "tor",
+          "stage": "Group",
+          "date": "Jun 12",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "van",
+          "stage": "Group",
+          "date": "Jun 18",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "tor",
+          "stage": "Group",
+          "date": "Jun 24",
+          "played": true,
+          "mode": "charter"
+        }
+      ],
+      "verified": "group-only"
+    },
+    {
+      "code": "SCO",
+      "name": "Scotland",
+      "flag": "🏴󠁧󠁢󠁳󠁣󠁴󠁿",
+      "group": "L",
+      "status": "eliminated",
+      "confederation": "UEFA",
+      "base": {
+        "name": "Charlotte FC Training Center",
+        "city": "Charlotte, NC",
+        "lat": 35.226,
+        "lon": -80.843
+      },
+      "fixtures": [
+        {
+          "stadium": "sea",
+          "stage": "Group",
+          "date": "Jun 17",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "van",
+          "stage": "Group",
+          "date": "Jun 23",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "sfo",
+          "stage": "Group",
+          "date": "Jun 27",
+          "played": true,
+          "mode": "charter"
+        }
+      ],
+      "verified": "group-only"
+    },
+    {
+      "code": "NOR",
+      "name": "Norway",
+      "flag": "🇳🇴",
+      "group": "I",
+      "status": "qf",
+      "confederation": "UEFA",
+      "base": {
+        "name": "UNC Greensboro",
+        "city": "Greensboro, NC",
+        "lat": 36.062,
+        "lon": -79.809
+      },
+      "fixtures": [
+        {
+          "stadium": "mia",
+          "stage": "Group",
+          "date": "Jun 16",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "nyc",
+          "stage": "Group",
+          "date": "Jun 22",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "atl",
+          "stage": "Group",
+          "date": "Jun 26",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "dal",
+          "stage": "R32",
+          "date": "Jul 1",
+          "played": true,
+          "mode": "charter",
+          "opponent": "Ivory Coast",
+          "result": "2-1 W"
+        },
+        {
+          "stadium": "nyc",
+          "stage": "R16",
+          "date": "Jul 5",
+          "played": true,
+          "mode": "charter",
+          "opponent": "Brazil",
+          "result": "2-1 W"
+        },
+        {
+          "stadium": "mia",
+          "stage": "QF",
+          "date": "Jul 11",
+          "played": false,
+          "mode": "charter",
+          "opponent": "England",
+          "result": "upcoming"
+        }
+      ],
+      "verified": "knockout-verified"
+    },
+    {
+      "code": "SWE",
+      "name": "Sweden",
+      "flag": "🇸🇪",
+      "group": "C",
+      "status": "eliminated",
+      "confederation": "UEFA",
+      "base": {
+        "name": "FC Dallas Stadium",
+        "city": "Frisco, TX",
+        "lat": 33.155,
+        "lon": -96.836
+      },
+      "fixtures": [
+        {
+          "stadium": "atl",
+          "stage": "Group",
+          "date": "Jun 13",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "nyc",
+          "stage": "Group",
+          "date": "Jun 19",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "mia",
+          "stage": "Group",
+          "date": "Jun 25",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "nyc",
+          "stage": "R32",
+          "date": "Jun 30",
+          "played": true,
+          "mode": "charter",
+          "opponent": "France",
+          "result": "0-3 L"
+        }
+      ],
+      "verified": "knockout-verified"
+    },
+    {
+      "code": "CZE",
+      "name": "Czechia",
+      "flag": "🇨🇿",
+      "group": "G",
+      "status": "eliminated",
+      "confederation": "UEFA",
+      "base": {
+        "name": "Mansfield Multipurpose Stadium",
+        "city": "Mansfield, TX",
+        "lat": 32.564,
+        "lon": -97.144
+      },
+      "fixtures": [
+        {
+          "stadium": "kan",
+          "stage": "Group",
+          "date": "Jun 15",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "dal",
+          "stage": "Group",
+          "date": "Jun 21",
+          "played": true,
+          "mode": "bus"
+        },
+        {
+          "stadium": "atl",
+          "stage": "Group",
+          "date": "Jun 27",
+          "played": true,
+          "mode": "charter"
+        }
+      ],
+      "verified": "group-only"
+    },
+    {
+      "code": "BIH",
+      "name": "Bosnia & Herzegovina",
+      "flag": "🇧🇦",
+      "group": "D",
+      "status": "eliminated",
+      "confederation": "UEFA",
+      "base": {
+        "name": "RSL Stadium",
+        "city": "Sandy, UT",
+        "lat": 40.583,
+        "lon": -111.892
+      },
+      "fixtures": [
+        {
+          "stadium": "lax",
+          "stage": "Group",
+          "date": "Jun 12",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "sea",
+          "stage": "Group",
+          "date": "Jun 18",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "lax",
+          "stage": "Group",
+          "date": "Jun 24",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "sfo",
+          "stage": "R32",
+          "date": "Jul 1",
+          "played": true,
+          "mode": "charter",
+          "opponent": "USA",
+          "result": "0-2 L"
+        }
+      ],
+      "verified": "knockout-verified"
+    },
+    {
+      "code": "IRQ",
+      "name": "Iraq",
+      "flag": "🇮🇶",
+      "group": "E",
+      "status": "eliminated",
+      "confederation": "AFC",
+      "base": {
+        "name": "The Greenbrier Sports Performance Center",
+        "city": "White Sulphur Springs, WV",
+        "lat": 37.797,
+        "lon": -80.303
+      },
+      "fixtures": [
+        {
+          "stadium": "nyc",
+          "stage": "Group",
+          "date": "Jun 13",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "phi",
+          "stage": "Group",
+          "date": "Jun 19",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "atl",
+          "stage": "Group",
+          "date": "Jun 25",
+          "played": true,
+          "mode": "charter"
+        }
+      ],
+      "verified": "group-only"
+    },
+    {
+      "code": "NZL",
+      "name": "New Zealand",
+      "flag": "🇳🇿",
+      "group": "F",
+      "status": "eliminated",
+      "confederation": "OFC",
+      "base": {
+        "name": "University of San Diego",
+        "city": "San Diego, CA",
+        "lat": 32.771,
+        "lon": -117.19
+      },
+      "fixtures": [
+        {
+          "stadium": "bos",
+          "stage": "Group",
+          "date": "Jun 14",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "phi",
+          "stage": "Group",
+          "date": "Jun 20",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "nyc",
+          "stage": "Group",
+          "date": "Jun 25",
+          "played": true,
+          "mode": "charter"
+        }
+      ],
+      "verified": "group-only"
+    },
+    {
+      "code": "PAN",
+      "name": "Panama",
+      "flag": "🇵🇦",
+      "group": "L",
+      "status": "eliminated",
+      "confederation": "CONCACAF",
+      "base": {
+        "name": "Nottawasaga Training Site",
+        "city": "Ontario, Canada",
+        "lat": 44.157,
+        "lon": -79.867
+      },
+      "fixtures": [
+        {
+          "stadium": "sea",
+          "stage": "Group",
+          "date": "Jun 17",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "van",
+          "stage": "Group",
+          "date": "Jun 23",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "sfo",
+          "stage": "Group",
+          "date": "Jun 27",
+          "played": true,
+          "mode": "charter"
+        }
+      ],
+      "verified": "group-only"
+    },
+    {
+      "code": "HAI",
+      "name": "Haiti",
+      "flag": "🇭🇹",
+      "group": "H",
+      "status": "eliminated",
+      "confederation": "CONCACAF",
+      "base": {
+        "name": "Stockton University",
+        "city": "Galloway, NJ",
+        "lat": 39.484,
+        "lon": -74.538
+      },
+      "fixtures": [
+        {
+          "stadium": "atl",
+          "stage": "Group",
+          "date": "Jun 15",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "mia",
+          "stage": "Group",
+          "date": "Jun 21",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "phi",
+          "stage": "Group",
+          "date": "Jun 27",
+          "played": true,
+          "mode": "bus"
+        }
+      ],
+      "verified": "group-only"
+    },
+    {
+      "code": "CUW",
+      "name": "Curaçao",
+      "flag": "🇨🇼",
+      "group": "K",
+      "status": "eliminated",
+      "confederation": "CONCACAF",
+      "base": {
+        "name": "Florida Atlantic University",
+        "city": "Boca Raton, FL",
+        "lat": 26.372,
+        "lon": -80.104
+      },
+      "fixtures": [
+        {
+          "stadium": "sfo",
+          "stage": "Group",
+          "date": "Jun 17",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "sea",
+          "stage": "Group",
+          "date": "Jun 23",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "kan",
+          "stage": "Group",
+          "date": "Jun 27",
+          "played": true,
+          "mode": "charter"
+        }
+      ],
+      "verified": "group-only"
+    }
+  ]
+}

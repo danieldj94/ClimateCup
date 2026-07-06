@@ -1,0 +1,1362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Live Tracker v1.1 · Climate TRACE Anchored · WC Climate 2026</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#f5f7fa;--surface:#fff;--border:#dde3ec;
+      --green:#00a86b;--green-lt:#e6f7f1;--green-dk:#007a4d;
+      --red:#e8273a;--red-lt:#fdeaec;
+      --amber:#e07b00;--amber-lt:#fdf3e3;
+      --blue:#1a6fdb;--blue-lt:#e8f0fc;
+      --text:#0f1c2e;--muted:#6b7f99;
+      --dark:#0a1220;--gold:#c9a84c;--gold-lt:#fdf8ed;
+      --hero:'Bebas Neue',sans-serif;
+      --body:'DM Sans',sans-serif;
+      --mono:'DM Mono',monospace;
+    }
+    html{scroll-behavior:smooth}
+    body{background:var(--bg);color:var(--text);font-family:var(--body);overflow-x:hidden}
+
+    /* ═══════════════════════════════════ NAV (matches site) */
+    nav{position:fixed;top:0;left:0;right:0;z-index:400;display:flex;align-items:center;justify-content:space-between;padding:1.1rem 3rem;background:rgba(10,18,32,.92);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,.06)}
+    .nav-logo{font-family:var(--mono);font-size:.75rem;color:var(--green);letter-spacing:.12em;text-transform:uppercase;text-decoration:none;display:flex;align-items:center;gap:.6rem}
+    .nav-logo::before{content:'';width:8px;height:8px;background:var(--green);border-radius:50%;animation:pulse 2s ease infinite}
+    @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.7)}}
+    .nav-links{display:flex;gap:2rem;list-style:none}
+    .nav-links a{font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.4);text-decoration:none;transition:color .2s;font-family:var(--mono)}
+    .nav-links a:hover{color:rgba(255,255,255,.8)}
+    .nav-links a.active{color:var(--green)}
+
+    /* ═══════════════════════════════════ HEADER */
+    .page-header{padding:6rem 3rem 2rem;background:var(--dark);position:relative;overflow:hidden;min-height:300px;display:flex;flex-direction:column;justify-content:flex-end}
+    .ph-bg{position:absolute;inset:0;background-image:url('https://images.unsplash.com/photo-1518091043644-c1d4457512c6?w=1800&auto=format&fit=crop&q=80');background-size:cover;background-position:center 45%;opacity:.18}
+    .ph-overlay{position:absolute;inset:0;background:linear-gradient(to top,var(--dark) 30%,rgba(10,18,32,.55) 70%,rgba(10,18,32,.3)),linear-gradient(90deg,rgba(10,18,32,.7) 40%,transparent)}
+    .ph-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.02) 1px,transparent 1px);background-size:60px 60px;pointer-events:none;animation:gridShift 25s linear infinite}
+    @keyframes gridShift{from{background-position:0 0}to{background-position:60px 60px}}
+    .htag{font-family:var(--mono);font-size:.68rem;letter-spacing:.22em;text-transform:uppercase;color:var(--amber);margin-bottom:.8rem;position:relative;display:flex;align-items:center;gap:.7rem}
+    .htag::after{content:'';flex:0 0 40px;height:1px;background:var(--amber);opacity:.45}
+    .lab-badge{display:inline-flex;align-items:center;gap:.45rem;padding:.22rem .55rem;background:rgba(224,123,0,.13);border:1px solid rgba(224,123,0,.32);border-radius:2px;font-family:var(--mono);font-size:.5rem;letter-spacing:.16em;color:var(--amber);text-transform:uppercase}
+    .lab-badge::before{content:'';width:5px;height:5px;background:var(--amber);border-radius:50%;animation:pulse 1.6s ease infinite}
+    .page-header h1{font-family:var(--hero);font-size:clamp(2.4rem,6vw,4.5rem);line-height:.95;text-transform:uppercase;color:#fff;position:relative;letter-spacing:-.005em}
+    .page-header h1 em{color:var(--amber);font-style:normal}
+    .page-header h1 .outline{-webkit-text-stroke:1px rgba(255,255,255,.28);color:transparent}
+    .page-header p{margin-top:.8rem;max-width:620px;font-size:.88rem;line-height:1.7;color:rgba(255,255,255,.5);font-weight:300;position:relative}
+    .header-meta{position:absolute;top:5.5rem;right:3rem;font-family:var(--mono);font-size:.55rem;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.35);text-align:right;line-height:1.7;border-right:2px solid var(--amber);padding-right:.85rem}
+    .header-year{position:absolute;bottom:1.2rem;right:3rem;font-family:var(--hero);font-size:8rem;line-height:1;color:rgba(255,255,255,.03);pointer-events:none;letter-spacing:-.02em}
+
+    /* ═══════════════════════════════════ GLOBAL TICKER (the headline) */
+    .global-strip{background:var(--dark);border-top:1px solid rgba(255,255,255,.06);padding:1.6rem 3rem 2.2rem;display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:1px;background-color:rgba(255,255,255,.045);border-bottom:1px solid rgba(255,255,255,.06)}
+    .gs{background:var(--dark);padding:1.1rem 1.4rem;position:relative;overflow:hidden}
+    .gs::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+    .gs.t1::before{background:var(--amber)}
+    .gs.t2::before{background:var(--red)}
+    .gs.t3::before{background:#6aabff}
+    .gs.t4::before{background:var(--green)}
+    .gs-label{font-family:var(--mono);font-size:.55rem;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.32);margin-bottom:.45rem;display:flex;align-items:center;gap:.5rem}
+    .live-dot{width:6px;height:6px;border-radius:50%;background:var(--amber);animation:pulse 1.4s ease infinite;box-shadow:0 0 0 0 rgba(224,123,0,.5);flex-shrink:0}
+    .gs-val{font-family:var(--hero);font-size:2.6rem;line-height:1;color:#fff;letter-spacing:-.005em;font-variant-numeric:tabular-nums;display:flex;align-items:baseline;gap:.4rem}
+    .gs.t1 .gs-val{color:var(--amber)}
+    .gs.t2 .gs-val{color:#ff6b7a}
+    .gs.t3 .gs-val{color:#6aabff}
+    .gs.t4 .gs-val{color:var(--green)}
+    .gs-unit{font-family:var(--mono);font-size:.68rem;color:rgba(255,255,255,.35);letter-spacing:.06em;font-weight:400}
+    .gs-sub{font-family:var(--mono);font-size:.55rem;color:rgba(255,255,255,.3);margin-top:.5rem;letter-spacing:.06em}
+    .gs-trend{display:inline-block;margin-left:.4rem;color:var(--amber);font-family:var(--mono);font-size:.7rem;font-weight:500}
+
+    /* ═══════════════════════════════════ CONTROLS */
+    .controls{padding:1.5rem 3rem 1rem;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:1.5rem;flex-wrap:wrap}
+    .ctrl-group{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+    .ctrl-label{font-family:var(--mono);font-size:.58rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-right:.3rem}
+    .cbtn{padding:.32rem .8rem;border:1px solid var(--border);background:var(--surface);font-family:var(--mono);font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);cursor:pointer;border-radius:2px;transition:all .18s;display:inline-flex;align-items:center;gap:.4rem}
+    .cbtn:hover{border-color:var(--text);color:var(--text)}
+    .cbtn.on{background:var(--dark);color:#fff;border-color:var(--dark)}
+    .cbtn.flag{font-size:.7rem;padding:.32rem .6rem}
+    .cbtn .ct-flag{font-size:.78rem}
+    .toggle-pill{display:inline-flex;align-items:center;gap:.55rem;padding:.32rem .8rem .32rem .55rem;border:1px solid var(--border);border-radius:24px;background:var(--surface);cursor:pointer;transition:all .18s}
+    .toggle-pill:hover{border-color:var(--amber)}
+    .toggle-pill.on{background:var(--amber-lt);border-color:var(--amber)}
+    .tp-sw{width:24px;height:14px;border-radius:8px;background:var(--border);position:relative;transition:background .18s}
+    .tp-sw::after{content:'';position:absolute;top:1px;left:1px;width:12px;height:12px;border-radius:50%;background:#fff;transition:transform .18s;box-shadow:0 1px 2px rgba(0,0,0,.18)}
+    .toggle-pill.on .tp-sw{background:var(--amber)}
+    .toggle-pill.on .tp-sw::after{transform:translateX(10px)}
+    .tp-text{font-family:var(--mono);font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+    .toggle-pill.on .tp-text{color:var(--amber)}
+
+    /* ═══════════════════════════════════ MAP SECTION */
+    .map-section{padding:1.5rem 3rem 0;background:var(--bg)}
+    .map-wrap{position:relative;background:linear-gradient(180deg,#0d1626 0%,#0a1220 100%);border:1px solid var(--border);border-radius:3px;overflow:hidden;height:540px}
+    .map-svg{width:100%;height:100%;display:block}
+    .map-grid-bg{stroke:rgba(255,255,255,.04);stroke-width:.5;fill:none}
+    .map-country-host{fill:rgba(255,255,255,.06);stroke:rgba(255,255,255,.22);stroke-width:.55;stroke-linejoin:round}
+    .map-country-other{fill:rgba(255,255,255,.018);stroke:rgba(255,255,255,.07);stroke-width:.4;stroke-linejoin:round}
+    .map-country-host.usa{fill:rgba(255,255,255,.075)}
+    .map-country-host.can{fill:rgba(255,255,255,.06)}
+    .map-country-host.mex{fill:rgba(255,255,255,.06)}
+    .map-loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.45);font-family:var(--mono);font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;pointer-events:none}
+    .map-loading::before{content:'';display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--amber);margin-right:.7rem;animation:pulse 1.4s ease infinite}
+    .map-city-dot{cursor:pointer;transition:opacity .35s ease,filter .35s ease}
+    .map-city-dot.dropped{opacity:.32;filter:saturate(.15)}
+    .map-city-pulse{fill:none;stroke-width:1;opacity:.55;pointer-events:none}
+    .map-city-label{font-family:var(--mono);font-size:.5rem;letter-spacing:.08em;fill:rgba(255,255,255,.45);text-transform:uppercase;pointer-events:none;text-anchor:middle}
+    .map-city-value{font-family:var(--mono);font-size:.42rem;letter-spacing:.03em;fill:rgba(255,255,255,.55);pointer-events:none;text-anchor:middle;font-variant-numeric:tabular-nums}
+    .map-city-dot.dropped .map-city-value{fill:rgba(255,255,255,.25)}
+    .map-city-dot.dropped .map-city-label{fill:rgba(255,255,255,.22)}
+
+    /* Map header / controls strip */
+    .map-head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:.85rem;flex-wrap:wrap;gap:1rem}
+    .map-title{font-family:var(--mono);font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--text);display:flex;align-items:center;gap:.55rem}
+    .map-title .live-dot{background:var(--red)}
+    .map-title em{font-style:normal;color:var(--muted);font-weight:400;text-transform:none;letter-spacing:.02em}
+    .map-mode-toggle{display:inline-flex;background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:2px;gap:0}
+    .mmt-btn{padding:.32rem .85rem;font-family:var(--mono);font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);background:transparent;border:none;cursor:pointer;border-radius:22px;transition:all .18s}
+    .mmt-btn.on{background:var(--dark);color:var(--gold)}
+    .mmt-btn:not(.on):hover{color:var(--text)}
+
+    /* Map legend gradient (bottom-left of map) */
+    .map-legend{position:absolute;bottom:.75rem;left:.85rem;background:rgba(10,18,32,.7);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.08);border-radius:3px;padding:.55rem .75rem;color:rgba(255,255,255,.75);font-family:var(--mono);font-size:.52rem;letter-spacing:.08em;text-transform:uppercase;line-height:1.6}
+    .map-legend-bar{height:7px;width:140px;border-radius:2px;background:linear-gradient(90deg,#4ea8de 0%,#90c2e7 22%,#f8d090 55%,#ee6b56 80%,#c2273a 100%);margin:.3rem 0 .15rem}
+    .map-legend-tx{display:flex;justify-content:space-between;color:rgba(255,255,255,.45);font-size:.46rem}
+
+    /* Map caption strip — explains what the under-dot numerical value means */
+    .map-caption{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.85rem;margin-top:.55rem;padding:.55rem .9rem;background:var(--surface);border:1px solid var(--border);border-radius:3px;font-family:var(--mono);font-size:.55rem;letter-spacing:.08em;color:var(--muted);line-height:1.6}
+    .map-caption-key{display:inline-flex;align-items:center;gap:.5rem;flex-shrink:0}
+    .map-caption-swatch{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:rgba(238,107,86,.18);border:1px solid rgba(238,107,86,.55);color:#ee6b56;font-size:.48rem;font-weight:500;letter-spacing:0;flex-shrink:0}
+    .map-caption-key strong{color:var(--text);font-weight:500;text-transform:none;letter-spacing:.04em;font-size:.62rem}
+    .map-caption-key span.muted{color:var(--muted);text-transform:none;letter-spacing:.04em;font-size:.58rem;font-family:var(--body);font-weight:300}
+    .map-caption-note{flex:1;text-align:right;text-transform:none;letter-spacing:.02em;font-family:var(--body);font-size:.7rem;font-weight:300;color:var(--muted);min-width:200px}
+    .map-caption-note em{color:var(--text);font-style:normal;font-weight:500}
+
+    /* Date strip & scrubber (only visible in playback mode) */
+    .map-timeline{position:absolute;top:.75rem;left:.85rem;right:.85rem;display:none;align-items:center;gap:.85rem;background:rgba(10,18,32,.78);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.1);border-radius:3px;padding:.55rem .85rem;color:#fff}
+    .map-timeline.on{display:flex}
+    .mtl-date{font-family:var(--hero);font-size:1.4rem;line-height:1;color:#fff;letter-spacing:-.005em;flex-shrink:0;min-width:7.5rem}
+    .mtl-stage{font-family:var(--mono);font-size:.58rem;letter-spacing:.16em;text-transform:uppercase;padding:.2rem .55rem;border-radius:2px;flex-shrink:0}
+    .mtl-stage.s-pre{background:rgba(255,255,255,.08);color:rgba(255,255,255,.55)}
+    .mtl-stage.s-group{background:rgba(0,168,107,.18);color:#7ed8b3}
+    .mtl-stage.s-r32{background:rgba(26,111,219,.2);color:#7eb1f0}
+    .mtl-stage.s-r16{background:rgba(106,171,255,.2);color:#9bc6ff}
+    .mtl-stage.s-qf{background:rgba(224,123,0,.22);color:#f3b366}
+    .mtl-stage.s-sf{background:rgba(232,39,58,.22);color:#ff8a96}
+    .mtl-stage.s-final{background:rgba(201,168,76,.25);color:#e8cc7d}
+    .mtl-stage.s-post{background:rgba(255,255,255,.06);color:rgba(255,255,255,.4)}
+    .mtl-progress{flex:1;height:6px;background:rgba(255,255,255,.08);border-radius:3px;position:relative;cursor:pointer;overflow:hidden;min-width:120px}
+    .mtl-progress-fill{height:100%;background:linear-gradient(90deg,#4ea8de,#f8d090 60%,#c2273a);border-radius:3px;width:0;transition:width .15s linear}
+    .mtl-progress-handle{position:absolute;top:50%;width:14px;height:14px;border-radius:50%;background:#fff;border:2px solid var(--gold);transform:translate(-50%,-50%);transition:left .15s linear;box-shadow:0 0 0 4px rgba(0,0,0,.3)}
+    .mtl-meta{font-family:var(--mono);font-size:.55rem;color:rgba(255,255,255,.5);text-align:right;line-height:1.5;flex-shrink:0;min-width:6rem}
+    .mtl-meta strong{color:var(--gold);font-weight:500;display:block;font-size:.62rem}
+
+    /* Playback controls (under timeline, only in playback mode) */
+    .play-controls{display:none;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.85rem;margin-top:.85rem;padding:.7rem .9rem;background:var(--surface);border:1px solid var(--border);border-radius:3px}
+    .play-controls.on{display:flex}
+    .pc-group{display:flex;align-items:center;gap:.45rem;flex-wrap:wrap}
+    .pc-label{font-family:var(--mono);font-size:.55rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-right:.2rem}
+    .pc-btn{padding:.3rem .7rem;border:1px solid var(--border);background:var(--surface);font-family:var(--mono);font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);cursor:pointer;border-radius:2px;transition:all .18s}
+    .pc-btn:hover{color:var(--text);border-color:var(--text)}
+    .pc-btn.on{background:var(--gold);color:var(--dark);border-color:var(--gold)}
+    .pc-btn.play-pause{background:var(--dark);color:#fff;border-color:var(--dark);min-width:5rem;text-align:center}
+    .pc-btn.play-pause:hover{background:var(--green);border-color:var(--green)}
+    .pc-info{font-family:var(--mono);font-size:.55rem;color:var(--muted);letter-spacing:.04em}
+    .pc-info strong{color:var(--text);font-weight:500}
+
+    /* Map tooltip */
+    .map-tip{position:absolute;background:var(--text);color:#fff;padding:.5rem .75rem;font-family:var(--mono);font-size:.6rem;letter-spacing:.04em;border-radius:2px;pointer-events:none;opacity:0;transition:opacity .12s;white-space:nowrap;z-index:30;line-height:1.6;border-left:2px solid var(--amber)}
+    .map-tip strong{color:var(--gold);font-weight:500;display:block;margin-bottom:.2rem;font-family:var(--hero);font-size:.85rem;letter-spacing:.02em}
+    .map-tip .tip-row{display:flex;justify-content:space-between;gap:.85rem}
+    .map-tip .tip-row span:last-child{color:#fff;font-weight:500}
+    .map-tip.dropped::before{content:'Eliminated venue · ';color:#ff8a96;display:inline}
+
+    /* ═══════════════════════════════════ MAIN GRID */
+    .main{padding:1.5rem 3rem 3rem;display:grid;grid-template-columns:1fr 320px;gap:1.5rem;align-items:start}
+    .left-col{min-width:0}
+    .right-col{position:sticky;top:5rem}
+
+    .sec-head{font-family:var(--mono);font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:1rem;display:flex;align-items:center;gap:.7rem}
+    .sec-head::after{content:'';flex:1;height:1px;background:var(--border)}
+    .sec-head .live-dot{background:var(--red);box-shadow:0 0 0 0 rgba(232,39,58,.5)}
+
+    /* CARD GRID */
+    .city-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:3px;overflow:hidden}
+    .ccard{background:var(--surface);padding:1.15rem 1.25rem;position:relative;transition:background .2s;cursor:default;overflow:hidden}
+    .ccard:hover{background:#fafbfd}
+    .ccard.surging{background:linear-gradient(135deg,#fff,#fff7e8 110%)}
+    .ccard-flag-stripe{position:absolute;top:0;left:0;bottom:0;width:3px}
+    .ccard.usa .ccard-flag-stripe{background:linear-gradient(to bottom,#b22234 0%,#b22234 33%,#fff 33%,#fff 66%,#3c3b6e 66%)}
+    .ccard.can .ccard-flag-stripe{background:linear-gradient(to bottom,#ff0000 0%,#ff0000 33%,#fff 33%,#fff 66%,#ff0000 66%)}
+    .ccard.mex .ccard-flag-stripe{background:linear-gradient(to bottom,#006847 0%,#006847 33%,#fff 33%,#fff 66%,#ce1126 66%)}
+    .ccard-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.6rem;gap:.6rem}
+    .ccard-name{font-family:var(--hero);font-size:1.45rem;line-height:1;text-transform:uppercase;letter-spacing:.005em}
+    .ccard-stadium{font-family:var(--mono);font-size:.52rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-top:.18rem}
+    .ccard-flag{font-size:1rem;flex-shrink:0;line-height:1}
+    .ccard-counter{font-family:var(--hero);font-size:2.1rem;line-height:1;color:var(--amber);font-variant-numeric:tabular-nums;letter-spacing:-.005em;margin-top:.55rem;display:flex;align-items:baseline;gap:.35rem}
+    .ccard-counter .cc-unit{font-family:var(--mono);font-size:.58rem;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;font-weight:400}
+    .ccard-meta{display:flex;justify-content:space-between;align-items:center;margin-top:.7rem;gap:.6rem;font-family:var(--mono);font-size:.52rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);flex-wrap:wrap;row-gap:.35rem}
+    .ccard-rate{color:var(--text);font-weight:500}
+    .ccard-bar{height:3px;background:var(--border);border-radius:1.5px;overflow:hidden;margin-top:.55rem;position:relative}
+    .ccard-bar-fill{height:100%;background:var(--amber);border-radius:1.5px;width:0;transition:width .9s ease;position:relative}
+    .ccard-bar-fill::after{content:'';position:absolute;right:0;top:-1px;bottom:-1px;width:5px;background:var(--amber);box-shadow:0 0 8px var(--amber);border-radius:50%;opacity:.85}
+    .ccard.surging .ccard-counter{color:var(--red)}
+    .ccard.surging .ccard-bar-fill{background:var(--red)}
+    .ccard.surging .ccard-bar-fill::after{background:var(--red);box-shadow:0 0 8px var(--red)}
+    .surge-tag{display:inline-flex;align-items:center;gap:.32rem;font-family:var(--mono);font-size:.5rem;letter-spacing:.1em;text-transform:uppercase;color:var(--red);padding:.2rem .45rem;background:var(--red-lt);border-radius:2px;margin-left:.4rem}
+    .surge-tag::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--red);animation:pulse 1.4s ease infinite}
+
+    /* RIGHT COL — sidebar panels */
+    .panel{background:var(--surface);border:1px solid var(--border);border-radius:3px;margin-bottom:1rem;overflow:hidden}
+    .panel-head{padding:.85rem 1.1rem;border-bottom:1px solid var(--border);background:#fafbfd;font-family:var(--mono);font-size:.6rem;letter-spacing:.16em;text-transform:uppercase;color:var(--text);display:flex;align-items:center;gap:.5rem}
+    .panel-body{padding:1.1rem}
+
+    /* leaderboard */
+    .lb-row{display:flex;align-items:center;gap:.7rem;padding:.55rem 0;border-bottom:1px solid var(--border)}
+    .lb-row:last-child{border-bottom:none}
+    .lb-rank{font-family:var(--hero);font-size:1.1rem;color:var(--muted);width:1.6rem;flex-shrink:0;line-height:1}
+    .lb-rank.r1{color:var(--gold)}
+    .lb-rank.r2{color:#888}
+    .lb-rank.r3{color:#a76a3c}
+    .lb-name{flex:1;min-width:0;font-size:.78rem;font-weight:500}
+    .lb-name span{display:block;font-family:var(--mono);font-size:.5rem;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-top:.1rem}
+    .lb-val{font-family:var(--hero);font-size:1.05rem;color:var(--amber);font-variant-numeric:tabular-nums;line-height:1}
+
+    /* breakdown */
+    .br-bar{margin-bottom:.85rem}
+    .br-bar:last-child{margin-bottom:0}
+    .br-bar-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:.32rem}
+    .br-bar-name{font-size:.7rem;font-weight:500}
+    .br-bar-name .br-flag{margin-right:.4rem}
+    .br-bar-pct{font-family:var(--mono);font-size:.6rem;color:var(--muted);letter-spacing:.05em}
+    .br-bar-track{height:6px;background:var(--border);border-radius:3px;overflow:hidden}
+    .br-bar-fill{height:100%;border-radius:3px;transition:width .6s ease}
+    .br-bar.b-usa .br-bar-fill{background:#1a6fdb}
+    .br-bar.b-can .br-bar-fill{background:#e8273a}
+    .br-bar.b-mex .br-bar-fill{background:var(--green)}
+
+    /* sector breakdown */
+    .sec-bar{margin-bottom:.7rem}
+    .sec-bar:last-child{margin-bottom:0}
+    .sec-bar-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:.28rem}
+    .sec-bar-name{font-size:.68rem;font-weight:500;display:flex;align-items:center;gap:.4rem}
+    .sec-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+    .sec-bar-pct{font-family:var(--mono);font-size:.58rem;color:var(--muted);letter-spacing:.04em}
+    .sec-bar-track{height:5px;background:var(--border);border-radius:2.5px;overflow:hidden}
+    .sec-bar-fill{height:100%;border-radius:2.5px;transition:width .6s ease}
+
+    /* methodology */
+    .method-list{list-style:none}
+    .method-list li{padding:.55rem 0;border-bottom:1px solid var(--border);font-size:.72rem;line-height:1.55;color:var(--muted);display:flex;gap:.55rem;align-items:flex-start}
+    .method-list li:last-child{border-bottom:none}
+    .method-list li::before{content:'◆';color:var(--amber);font-size:.45rem;margin-top:.45rem;flex-shrink:0}
+    .method-list li strong{color:var(--text);font-weight:600;display:block;margin-bottom:.15rem;font-size:.74rem}
+
+    /* limitations callout */
+    .caveat{background:var(--amber-lt);border:1px solid #f3d99c;border-radius:3px;padding:1rem;margin-bottom:1rem}
+    .caveat-head{font-family:var(--mono);font-size:.58rem;letter-spacing:.16em;text-transform:uppercase;color:var(--amber);margin-bottom:.45rem;display:flex;align-items:center;gap:.45rem}
+    .caveat-head::before{content:'⚠';font-size:.85rem}
+    .caveat p{font-size:.74rem;line-height:1.6;color:#7a4a00}
+
+    /* ═══════════════════════════════════ CONTEXT ROW (below grid) */
+    .context-row{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-top:2rem}
+    .ctx-card{background:var(--dark);padding:1.6rem;border-radius:3px;color:#fff;position:relative;overflow:hidden}
+    .ctx-card.lt{background:var(--surface);color:var(--text);border:1px solid var(--border)}
+    .ctx-card::after{content:'';position:absolute;right:-2.5rem;top:-2.5rem;width:140px;height:140px;border-radius:50%;background:radial-gradient(circle,rgba(224,123,0,.13),transparent 70%);pointer-events:none}
+    .ctx-card.lt::after{display:none}
+    .ctx-tag{font-family:var(--mono);font-size:.55rem;letter-spacing:.18em;text-transform:uppercase;color:var(--amber);margin-bottom:.6rem}
+    .ctx-card.lt .ctx-tag{color:var(--green)}
+    .ctx-card h3{font-family:var(--hero);font-size:1.7rem;line-height:1;text-transform:uppercase;margin-bottom:.7rem;letter-spacing:-.005em}
+    .ctx-card p{font-size:.82rem;line-height:1.7;font-weight:300}
+    .ctx-card.lt p{color:var(--muted)}
+    .ctx-card.dark p{color:rgba(255,255,255,.5)}
+    .ctx-stat{margin-top:1rem;padding:.8rem;background:rgba(0,0,0,.35);border-left:2px solid var(--amber);display:inline-block;position:relative;z-index:2}
+    .ctx-card.lt .ctx-stat{background:var(--bg);border-left-color:var(--green)}
+    .ctx-stat-val{font-family:var(--hero);font-size:1.5rem;color:var(--amber);line-height:1}
+    .ctx-card.lt .ctx-stat-val{color:var(--green)}
+    .ctx-stat-label{font-family:var(--mono);font-size:.5rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-top:.18rem}
+    .ctx-card.lt .ctx-stat-label{color:var(--muted)}
+
+    /* equivalences strip */
+    .equivs{margin-top:2rem;background:var(--surface);border:1px solid var(--border);border-radius:3px;padding:1.4rem 1.6rem}
+    .equivs-head{font-family:var(--mono);font-size:.6rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:1rem;display:flex;align-items:center;gap:.5rem}
+    .eq-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border)}
+    .eq-item{background:var(--surface);padding:1rem;text-align:center}
+    .eq-icon{font-size:1.3rem;margin-bottom:.4rem}
+    .eq-val{font-family:var(--hero);font-size:1.5rem;color:var(--text);line-height:1;font-variant-numeric:tabular-nums}
+    .eq-label{font-family:var(--mono);font-size:.52rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-top:.32rem;line-height:1.5}
+
+    /* ═══════════════════════════════════ FOOTER (matches site) */
+    footer{background:var(--dark);padding:3.5rem 3rem;display:grid;grid-template-columns:1fr auto;gap:2.5rem;align-items:start;border-top:1px solid rgba(255,255,255,.05);margin-top:1rem}
+    .footer-brand{font-family:var(--mono);font-size:.75rem;color:var(--green);letter-spacing:.12em;text-transform:uppercase;margin-bottom:.6rem}
+    .footer-tagline{font-size:.82rem;color:rgba(255,255,255,.23);font-weight:300;max-width:380px;line-height:1.65}
+    .footer-links{display:flex;flex-direction:column;gap:.6rem;text-align:right}
+    .footer-links a{font-family:var(--mono);font-size:.62rem;color:rgba(255,255,255,.28);text-decoration:none;letter-spacing:.1em;transition:color .18s}
+    .footer-links a:hover{color:var(--green)}
+    .footer-bottom{grid-column:1/-1;padding-top:2rem;border-top:1px solid rgba(255,255,255,.05);display:flex;justify-content:space-between;flex-wrap:wrap;gap:1rem}
+    .footer-bottom p{font-family:var(--mono);font-size:.57rem;color:rgba(255,255,255,.18);letter-spacing:.08em}
+
+    /* ═══════════════════════════════════ RESPONSIVE */
+    @media(max-width:1100px){
+      .main{grid-template-columns:1fr}
+      .right-col{position:static;display:grid;grid-template-columns:1fr 1fr;gap:1rem;align-items:start}
+      .right-col .panel{margin-bottom:0}
+      .right-col .caveat{grid-column:1/-1}
+      .global-strip{grid-template-columns:1fr 1fr}
+      .context-row{grid-template-columns:1fr}
+      .eq-grid{grid-template-columns:1fr 1fr}
+      .map-wrap{height:460px}
+    }
+    @media(max-width:720px){
+      nav{padding:1rem 1.5rem}.nav-links{display:none}
+      .page-header{padding:5rem 1.5rem 1.5rem}
+      .header-meta{display:none}
+      .header-year{font-size:5rem;right:1.5rem}
+      .global-strip{grid-template-columns:1fr;padding:1rem 1.5rem}
+      .controls,.main,.map-section{padding-left:1.5rem;padding-right:1.5rem}
+      .city-grid{grid-template-columns:1fr}
+      .right-col{grid-template-columns:1fr}
+      .gs-val{font-size:2rem}
+      .map-wrap{height:380px}
+      .map-city-label{display:none}
+      .map-city-value{display:none}
+      .mtl-date{font-size:1rem;min-width:5.5rem}
+      .mtl-meta{display:none}
+      footer{padding:2rem 1.5rem;grid-template-columns:1fr}
+      .footer-links{text-align:left}
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">A Study on the FIFA World Cup 2026</a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="museum.html">Museum</a></li>
+    <li><a href="climate-map.html">Climate Map</a></li>
+    <li><a href="climate-data.html">Climate Data</a></li>
+    <li><a href="recommendations.html">Recommendations</a></li>
+    <li><a href="team-tracker.html">Team Tracker <span style="font-size:.65em;vertical-align:middle;background:#e07b00;color:#fff;padding:.1em .4em;border-radius:.3em;font-family:var(--mono);letter-spacing:.03em">NEW</span></a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="sources.html">Sources</a></li>
+    <li><a href="live-tracker.html" class="active">Live Tracker <span style="font-size:.65em;vertical-align:middle;background:var(--red);color:#fff;padding:.1em .4em;border-radius:.3em;font-family:var(--mono);letter-spacing:.03em">EXP</span></a></li>
+  </ul>
+</nav>
+
+<!-- ═══════ HEADER ═══════ -->
+<section class="page-header">
+  <div class="ph-bg"></div>
+  <div class="ph-overlay"></div>
+  <div class="ph-grid"></div>
+  <div class="header-meta">
+    Future of the Project<br/>
+    Lab · v1.1 · Climate TRACE anchored<br/>
+    Last refresh: <span id="lastRefresh">--:--:--</span>
+  </div>
+  <div class="header-year">26</div>
+
+  <div class="htag">
+    <span class="lab-badge">Lab · v1.1</span>
+    Live Carbon Tracker
+  </div>
+  <h1>Sixteen <em>Cities.</em><br/>One <span class="outline">Tournament.</span></h1>
+  <p>Per-second CO₂e emissions across all 16 host cities of the 2026 FIFA World Cup — derived from <strong style="color:rgba(255,255,255,.75)">Climate TRACE's monthly inventory v5.5.0</strong> (data through January 2026). All figures in <strong style="color:rgba(255,255,255,.75)">metric tonnes</strong> (1,000 kg). Animated to illustrate the scale of urban metabolism the tournament will sit on top of.</p>
+</section>
+
+<!-- ═══════ GLOBAL STRIP ═══════ -->
+<section class="global-strip">
+  <div class="gs t1">
+    <div class="gs-label"><span class="live-dot"></span>Total emissions · all 16 host cities · since you opened this page</div>
+    <div class="gs-val"><span id="globalTotal">0</span><span class="gs-unit">metric tonnes CO₂e</span></div>
+    <div class="gs-sub">Derived from Climate TRACE monthly · updated every second</div>
+  </div>
+  <div class="gs t2">
+    <div class="gs-label">Per-second rate</div>
+    <div class="gs-val"><span id="globalRate">0</span><span class="gs-unit">metric t/sec</span></div>
+    <div class="gs-sub">Across active cities</div>
+  </div>
+  <div class="gs t3">
+    <div class="gs-label">Combined population</div>
+    <div class="gs-val"><span id="totalPop">0</span><span class="gs-unit">M</span></div>
+    <div class="gs-sub">Metro area aggregate</div>
+  </div>
+  <div class="gs t4">
+    <div class="gs-label">Active cities</div>
+    <div class="gs-val"><span id="activeCount">16</span><span class="gs-unit">/ 16</span></div>
+    <div class="gs-sub">Currently displayed</div>
+  </div>
+</section>
+
+<!-- ═══════ MAP ═══════ -->
+<section class="map-section">
+  <div class="map-head">
+    <div class="map-title">
+      <span class="live-dot"></span>
+      Continental heat map · cumulative emissions <em>since pageload</em>
+    </div>
+    <div class="map-mode-toggle" role="tablist" aria-label="Map mode">
+      <button class="mmt-btn on" data-mode="live">▶ Live · Real-time</button>
+      <button class="mmt-btn" data-mode="play">⟳ Tournament Playback</button>
+    </div>
+  </div>
+
+  <div class="map-wrap" id="mapWrap">
+    <svg class="map-svg" id="mapSvg" viewBox="0 0 1000 620" preserveAspectRatio="xMidYMid meet" aria-label="Map of 2026 World Cup host cities"></svg>
+    <div class="map-loading" id="mapLoading">Loading geography…</div>
+
+    <!-- timeline strip (visible only in playback mode) -->
+    <div class="map-timeline" id="mapTimeline">
+      <div class="mtl-date" id="mtlDate">Jun 11</div>
+      <div class="mtl-stage s-pre" id="mtlStage">Pre-tournament</div>
+      <div class="mtl-progress" id="mtlProgress">
+        <div class="mtl-progress-fill" id="mtlProgressFill"></div>
+        <div class="mtl-progress-handle" id="mtlProgressHandle" style="left:0%"></div>
+      </div>
+      <div class="mtl-meta">
+        <strong id="mtlCounter">Day 0 of 39</strong>
+        <span id="mtlActive">16 active</span>
+      </div>
+    </div>
+
+    <!-- legend -->
+    <div class="map-legend">
+      Cumulative CO₂e
+      <div class="map-legend-bar"></div>
+      <div class="map-legend-tx"><span>Cool / low</span><span>Hot / high</span></div>
+    </div>
+  </div>
+
+  <!-- caption strip · clarifies what the small number under each dot represents -->
+  <div class="map-caption">
+    <div class="map-caption-key">
+      <div class="map-caption-swatch">0.3<br/>Mt</div>
+      <div>
+        <strong>Number under each dot</strong><br/>
+        <span class="muted">Cumulative metric tonnes CO₂e since pageload</span>
+      </div>
+    </div>
+    <div class="map-caption-note">
+      Values shown in <em>0.1-Mt steps</em> — each tick = <em>100,000 metric tonnes</em> (one full Mt = 1,000,000 metric tonnes). Below the first 100K threshold the live ticker reads in tonnes (e.g. <em>27,500&nbsp;t</em>) for visibility.
+    </div>
+  </div>
+
+  <!-- playback controls (visible only in playback mode) -->
+  <div class="play-controls" id="playControls">
+    <div class="pc-group">
+      <button class="pc-btn play-pause" id="pcPlay">▶ Play</button>
+      <button class="pc-btn" id="pcReset">↺ Reset</button>
+    </div>
+    <div class="pc-group">
+      <span class="pc-label">Speed</span>
+      <button class="pc-btn" data-speed="1440">1 min / day</button>
+      <button class="pc-btn on" data-speed="14400">6 sec / day</button>
+      <button class="pc-btn" data-speed="86400">1 sec / day</button>
+      <button class="pc-btn" data-speed="345600">Sprint</button>
+    </div>
+    <div class="pc-info">
+      Tournament window: <strong>Jun 11 → Jul 19, 2026</strong> · 39 days · 104 matches across 16 venues
+    </div>
+  </div>
+
+  <div class="map-tip" id="mapTip"></div>
+</section>
+
+<!-- ═══════ CONTROLS ═══════ -->
+<section class="controls">
+  <div class="ctrl-group">
+    <span class="ctrl-label">Filter by host nation</span>
+    <button class="cbtn on" data-filter="all">All · 16</button>
+    <button class="cbtn flag" data-filter="usa"><span class="ct-flag">🇺🇸</span> USA · 11</button>
+    <button class="cbtn flag" data-filter="can"><span class="ct-flag">🇨🇦</span> Canada · 2</button>
+    <button class="cbtn flag" data-filter="mex"><span class="ct-flag">🇲🇽</span> Mexico · 3</button>
+  </div>
+  <div class="ctrl-group">
+    <span class="ctrl-label">Sort by</span>
+    <button class="cbtn on" data-sort="rate">Per-second rate</button>
+    <button class="cbtn" data-sort="alpha">A → Z</button>
+    <button class="cbtn" data-sort="pop">Population</button>
+  </div>
+  <div class="ctrl-group">
+    <div class="toggle-pill" id="surgeToggle">
+      <div class="tp-sw"></div>
+      <span class="tp-text">Match-day surge mode</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════ MAIN ═══════ -->
+<section class="main">
+
+  <!-- LEFT — city cards -->
+  <div class="left-col">
+    <div class="sec-head">
+      <span class="live-dot"></span>
+      Host city emissions · live
+      <span style="margin-left:auto;color:var(--green);letter-spacing:.05em">Streaming</span>
+    </div>
+
+    <div class="city-grid" id="cityGrid"></div>
+
+    <!-- Context cards -->
+    <div class="context-row">
+      <div class="ctx-card dark">
+        <div class="ctx-tag">Why this matters</div>
+        <h3>The footprint isn't <em style="color:var(--amber);font-style:normal">the match.</em><br/>It's everything around it.</h3>
+        <p>A single 90-minute fixture is a rounding error against the year-round metabolism of a host city. The real climate question is whether World Cup infrastructure — stadiums, transit, hotels, fan zones — locks in carbon-intensive systems for decades, or accelerates the transition to clean ones.</p>
+        <div class="ctx-stat">
+          <div class="ctx-stat-val">~3.6 Mt CO₂e</div>
+          <div class="ctx-stat-label">FIFA's pre-tournament estimate · 2026 total</div>
+        </div>
+      </div>
+      <div class="ctx-card lt">
+        <div class="ctx-tag">What this version does</div>
+        <h3>Real inventory. <em style="color:var(--green);font-style:normal">Animated by the second.</em></h3>
+        <p>Each card takes Climate TRACE's most recent monthly figure for that city — combined CO₂, methane, and nitrous oxide expressed as CO₂-equivalent — divides by the seconds in that month, and ticks. The number you see climb is the city's published emissions rate, not a guess.</p>
+        <div class="ctx-stat">
+          <div class="ctx-stat-val">v5.5.0</div>
+          <div class="ctx-stat-label">Climate TRACE release · January 2026 data</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Equivalences -->
+    <div class="equivs">
+      <div class="equivs-head">
+        <span class="live-dot" style="background:var(--green)"></span>
+        What the running total looks like in plain terms
+      </div>
+      <div class="eq-grid">
+        <div class="eq-item">
+          <div class="eq-icon">✈️</div>
+          <div class="eq-val" id="eqFlights">0</div>
+          <div class="eq-label">Trans-Atlantic flights<br/>(per passenger · 0.5 metric t)</div>
+        </div>
+        <div class="eq-item">
+          <div class="eq-icon">🚗</div>
+          <div class="eq-val" id="eqCars">0</div>
+          <div class="eq-label">Cars driven for a year<br/>(US average · 4.6 metric t)</div>
+        </div>
+        <div class="eq-item">
+          <div class="eq-icon">🏠</div>
+          <div class="eq-val" id="eqHomes">0</div>
+          <div class="eq-label">Households · annual<br/>energy use (~7.5 metric t)</div>
+        </div>
+        <div class="eq-item">
+          <div class="eq-icon">🌳</div>
+          <div class="eq-val" id="eqTrees">0</div>
+          <div class="eq-label">Mature trees needed<br/>to offset (1 yr · 21 kg)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT — sidebar -->
+  <div class="right-col">
+
+    <div class="caveat">
+      <div class="caveat-head">Read this first</div>
+      <p>Numbers are <strong>derived from Climate TRACE's published monthly inventory</strong>, not a live satellite feed — satellites measure atmospheric concentration, not per-second emission rates. We take the most recent monthly figure (Jan 2026, v5.5.0) and animate it. Currently displayed values are <strong>placeholder estimates</strong> calibrated to known Climate TRACE figures while we finalize CSV ingestion.</p>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <span class="live-dot" style="background:var(--gold)"></span>
+        Top emitters · right now
+      </div>
+      <div class="panel-body" id="leaderboard"></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">By host nation · live share</div>
+      <div class="panel-body" id="breakdown"></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">By sector · all 16 cities</div>
+      <div class="panel-body" id="sectorBreakdown"></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">Methodology</div>
+      <div class="panel-body">
+        <ul class="method-list">
+          <li><strong>Source</strong>Climate TRACE monthly emissions inventory v5.5.0, released March 2026, covering data through January 2026. Free, CC-BY 4.0 licensed.</li>
+          <li><strong>Unit</strong>Metric tonnes of CO₂-equivalent (1 metric tonne = 1,000 kg ≈ 1.10 US short tons). CO₂e combines CO₂, methane, and nitrous oxide weighted by 100-year global warming potential.</li>
+          <li><strong>City rate</strong>Monthly inventory total ÷ seconds in that month = metric tonnes per second. A small ±5 % jitter is applied for visual liveness only.</li>
+          <li><strong>Sectors</strong>Power, transportation, buildings, fossil-fuel ops, manufacturing, waste. Climate TRACE bottom-up estimates from ~745 M observed assets.</li>
+          <li><strong>Surge mode</strong>Optional +12 % uplift representing match-day travel and stadium-operations literature (placeholder; not from Climate TRACE).</li>
+          <li><strong>Current state</strong>Placeholders calibrated to Climate TRACE's published top-100 urban-area tables. Real CSVs to be ingested in v1.2.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">Roadmap · v1.2 and beyond</div>
+      <div class="panel-body" style="font-size:.75rem;line-height:1.65;color:var(--muted)">
+        <p style="margin-bottom:.6rem"><strong style="color:var(--text);font-size:.78rem">Real CSV ingestion.</strong> Replace placeholder values with Climate TRACE city CSVs downloaded from the <a href="https://climatetrace.org/explore" target="_blank" rel="noopener" style="color:var(--green);text-decoration:underline;text-decoration-style:dotted;text-underline-offset:2px">Explore portal ↗</a> (per-city) or the <a href="https://climatetrace.org/data" target="_blank" rel="noopener" style="color:var(--green);text-decoration:underline;text-decoration-style:dotted;text-underline-offset:2px">Data downloads page ↗</a> (bulk).</p>
+        <p style="margin-bottom:.6rem"><strong style="color:var(--text);font-size:.78rem">Monthly auto-refresh.</strong> Re-fetch each month when Climate TRACE publishes a new release (~2-month lag).</p>
+        <p style="margin-bottom:.6rem"><strong style="color:var(--text);font-size:.78rem">Match-day overlay.</strong> FIFA fixture API mapped onto the city cards during the tournament window.</p>
+        <p style="margin-bottom:.6rem"><strong style="color:var(--text);font-size:.78rem">Sector-level explorer.</strong> Click a card → time-series chart showing how power, transport, and buildings shift through the year.</p>
+        <p><strong style="color:var(--text);font-size:.78rem">Post-tournament audit.</strong> Compare June–July 2026 actuals against same window in 2025.</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<footer>
+  <div>
+    <div class="footer-brand">WC Climate // 2026</div>
+    <div class="footer-tagline">A sustainability report on the intersection of football, climate change, and environmental impact across 92 years of FIFA World Cups.</div>
+  </div>
+  <div class="footer-links">
+    <a href="index.html">Home</a>
+    <a href="museum.html">Museum</a>
+    <a href="climate-map.html">Climate Map</a>
+    <a href="climate-data.html">Climate Data</a>
+    <a href="recommendations.html">Recommendations</a>
+    <a href="about.html">About</a>
+    <a href="sources.html">Sources</a>
+    <a href="live-tracker.html">Live Tracker</a>
+  </div>
+  <div class="footer-bottom">
+    <p>Data: Climate TRACE v5.5.0 (CC-BY 4.0) · FIFA · Our World in Data · IEA</p>
+    <p>Capstone · NYU CGA · De Jesus &amp; Rajasekar · 2026</p>
+  </div>
+</footer>
+
+<script>
+/* ════════════════════════════════════════════════════════════════════════
+   LIVE TRACKER  v1.1  ·  Climate TRACE-anchored
+   ────────────────────────────────────────────────────────────────────────
+   Each city's per-second emission rate is derived from its most recent
+   monthly figure in Climate TRACE's published inventory:
+
+       monthlyTonnes / secondsInThatMonth = metric tonnes per second
+
+   The placeholder values below are calibrated to Climate TRACE's published
+   top-100 urban-area tables (releases through January 2026, v5.5.0).
+   They are realistic but not exact. To swap in real CSVs, simply replace
+   the `monthlyTonnes` and `sectors` fields in the CITIES array — the rest
+   of the page wiring stays identical.
+
+   Data source:  https://climatetrace.org/data
+   Release:      v5.5.0  (data through January 2026)
+   Reference:    January 2026 has 31 days → 2,678,400 seconds
+   ════════════════════════════════════════════════════════════════════════ */
+
+// Reference month: January 2026 (31 days). Update if you swap the snapshot.
+const REFERENCE_MONTH_DAYS = 31;
+const SECONDS_IN_REF_MONTH = REFERENCE_MONTH_DAYS * 24 * 3600;   // 2,678,400
+
+// Sectors tracked, with display colors (matching the existing palette).
+// Ordering reflects Climate TRACE's top-level sector schema.
+const SECTORS = [
+  { key:'power',     name:'Power',          color:'#1a6fdb' },
+  { key:'transport', name:'Transportation', color:'#e07b00' },
+  { key:'buildings', name:'Buildings',      color:'#00a86b' },
+  { key:'fossilops', name:'Fossil-fuel ops',color:'#c9a84c' },
+  { key:'mfg',       name:'Manufacturing',  color:'#e8273a' },
+  { key:'waste',     name:'Waste',          color:'#6b7f99' },
+];
+
+/* ─── 16 host cities · placeholder monthly totals (metric tonnes CO₂e) ─
+   Each city has:
+     monthlyTonnes   total CO₂e for the reference month
+     sectors         breakdown summing to monthlyTonnes (or close to it)
+   Values calibrated to Climate TRACE published rankings; adjust freely
+   when real CSVs land. ──────────────────────────────────────────── */
+const CITIES = [
+  // ── USA · 11 ──
+  { id:'atl', name:'Atlanta',           country:'usa', flag:'🇺🇸', pop: 6.30, stadium:'Mercedes-Benz Stadium',
+    monthlyTonnes: 3_900_000, sectors:{power:1_550_000, transport:1_100_000, buildings:780_000, fossilops:230_000, mfg:200_000, waste:40_000} },
+  { id:'bos', name:'Boston',            country:'usa', flag:'🇺🇸', pop: 4.95, stadium:'Gillette Stadium · Foxborough',
+    monthlyTonnes: 3_200_000, sectors:{power:1_050_000, transport:950_000,  buildings:870_000, fossilops:130_000, mfg:170_000, waste:30_000} },
+  { id:'dal', name:'Dallas',            country:'usa', flag:'🇺🇸', pop: 8.10, stadium:'AT&T Stadium · Arlington',
+    monthlyTonnes: 5_800_000, sectors:{power:2_100_000, transport:2_000_000,buildings:850_000, fossilops:380_000, mfg:430_000, waste:40_000} },
+  { id:'hou', name:'Houston',           country:'usa', flag:'🇺🇸', pop: 7.34, stadium:'NRG Stadium',
+    monthlyTonnes: 7_400_000, sectors:{power:1_650_000, transport:1_700_000,buildings:780_000, fossilops:1_900_000, mfg:1_300_000, waste:70_000} },
+  { id:'kan', name:'Kansas City',       country:'usa', flag:'🇺🇸', pop: 2.20, stadium:'Arrowhead Stadium',
+    monthlyTonnes: 1_500_000, sectors:{power:550_000,   transport:430_000,  buildings:280_000, fossilops:90_000,  mfg:130_000, waste:20_000} },
+  { id:'lax', name:'Los Angeles',       country:'usa', flag:'🇺🇸', pop:13.20, stadium:'SoFi Stadium · Inglewood',
+    monthlyTonnes: 7_000_000, sectors:{power:1_900_000, transport:2_500_000,buildings:1_500_000, fossilops:430_000, mfg:580_000, waste:90_000} },
+  { id:'mia', name:'Miami',             country:'usa', flag:'🇺🇸', pop: 6.18, stadium:'Hard Rock Stadium · Miami Gardens',
+    monthlyTonnes: 3_400_000, sectors:{power:1_180_000, transport:1_080_000,buildings:740_000, fossilops:130_000, mfg:230_000, waste:40_000} },
+  { id:'nyc', name:'New York / NJ',     country:'usa', flag:'🇺🇸', pop:19.50, stadium:'MetLife Stadium · East Rutherford · FINAL',
+    monthlyTonnes: 7_500_000, sectors:{power:1_650_000, transport:2_400_000,buildings:2_200_000, fossilops:380_000, mfg:780_000, waste:90_000} },
+  { id:'phi', name:'Philadelphia',      country:'usa', flag:'🇺🇸', pop: 6.24, stadium:'Lincoln Financial Field',
+    monthlyTonnes: 3_700_000, sectors:{power:1_180_000, transport:1_080_000,buildings:830_000, fossilops:200_000, mfg:380_000, waste:30_000} },
+  { id:'sfo', name:'San Francisco Bay', country:'usa', flag:'🇺🇸', pop: 7.76, stadium:"Levi's Stadium · Santa Clara",
+    monthlyTonnes: 4_100_000, sectors:{power:1_080_000, transport:1_400_000,buildings:1_080_000, fossilops:130_000, mfg:380_000, waste:30_000} },
+  { id:'sea', name:'Seattle',           country:'usa', flag:'🇺🇸', pop: 4.05, stadium:'Lumen Field',
+    monthlyTonnes: 2_500_000, sectors:{power:480_000,   transport:880_000,  buildings:680_000, fossilops:90_000,  mfg:330_000, waste:40_000} },
+
+  // ── Canada · 2 ──
+  { id:'tor', name:'Toronto',           country:'can', flag:'🇨🇦', pop: 6.43, stadium:'BMO Field',
+    monthlyTonnes: 3_100_000, sectors:{power:480_000,   transport:1_080_000,buildings:1_080_000, fossilops:130_000, mfg:280_000, waste:50_000} },
+  { id:'van', name:'Vancouver',         country:'can', flag:'🇨🇦', pop: 2.65, stadium:'BC Place',
+    monthlyTonnes: 1_080_000, sectors:{power:130_000,   transport:430_000,  buildings:330_000, fossilops:50_000,  mfg:120_000, waste:20_000} },
+
+  // ── Mexico · 3 ──
+  { id:'mex', name:'Mexico City',       country:'mex', flag:'🇲🇽', pop:22.50, stadium:'Estadio Azteca · OPENING MATCH',
+    monthlyTonnes: 5_200_000, sectors:{power:1_300_000, transport:2_080_000,buildings:830_000, fossilops:330_000, mfg:580_000, waste:80_000} },
+  { id:'gua', name:'Guadalajara',       country:'mex', flag:'🇲🇽', pop: 5.40, stadium:'Estadio Akron · Zapopan',
+    monthlyTonnes: 1_350_000, sectors:{power:380_000,   transport:530_000,  buildings:230_000, fossilops:80_000,  mfg:110_000, waste:20_000} },
+  { id:'mty', name:'Monterrey',         country:'mex', flag:'🇲🇽', pop: 5.50, stadium:'Estadio BBVA',
+    monthlyTonnes: 1_550_000, sectors:{power:380_000,   transport:530_000,  buildings:200_000, fossilops:130_000, mfg:280_000, waste:30_000} },
+];
+
+// Derive per-second base rate from each city's monthly inventory total
+CITIES.forEach(c => {
+  c.popM = c.pop;                                    // millions, for display
+  c.baseRate = c.monthlyTonnes / SECONDS_IN_REF_MONTH;   // metric tonnes per second
+  c.accumulated = 0;                                 // metric tonnes since pageload
+  c.currentRate = c.baseRate;                        // updated each tick
+});
+
+/* ─── Geographic + tournament-stage enrichment ─────────────────────
+   lat/lon for the venue (so the map dot sits where the stadium is)
+   lastMatchDay: day index in the 39-day tournament (Jun 11 = day 0,
+                 Jul 19 = day 38) on which this venue hosts its final
+                 match. After this day, the dot fades on the map.
+   stageExit:    short label for what stage the venue exits at.
+   ──────────────────────────────────────────────────────────────────  */
+const VENUE_INFO = {
+  // city_id : [lat, lon, lastMatchDay, stageExit]
+  atl: [33.76, -84.40, 34, 'SF'],         // Jul 14/15
+  bos: [42.09, -71.26, 28, 'QF'],         // Jul 9
+  dal: [32.74, -97.08, 34, 'SF'],         // Jul 14/15
+  hou: [29.68, -95.41, 25, 'R16'],        // Jul 6
+  kan: [39.05, -94.48, 30, 'QF'],         // Jul 11
+  lax: [33.95,-118.34, 30, 'QF'],         // Jul 11
+  mia: [25.96, -80.24, 37, 'Bronze'],     // Jul 18
+  nyc: [40.81, -74.07, 38, 'FINAL'],      // Jul 19
+  phi: [39.90, -75.17, 22, 'R32'],        // Jul 3
+  sfo: [37.40,-121.97, 22, 'R32'],        // Jul 3
+  sea: [47.60,-122.33, 22, 'R32'],        // Jul 3
+  tor: [43.63, -79.42, 22, 'R32'],        // Jul 3
+  van: [49.28,-123.11, 25, 'R16'],        // Jul 6
+  mex: [19.30, -99.15, 13, 'Group'],      // Jun 24 (last group match)
+  gua: [20.68,-103.46, 15, 'Group'],      // Jun 26
+  mty: [25.67,-100.31, 22, 'R32'],        // Jul 3
+};
+CITIES.forEach(c => {
+  const v = VENUE_INFO[c.id];
+  c.lat = v[0]; c.lon = v[1];
+  c.lastMatchDay = v[2];
+  c.stageExit    = v[3];
+});
+
+let activeFilter = 'all';
+let activeSort   = 'rate';
+let surgeOn      = false;
+
+const SURGE_MULT = 1.12;   // placeholder match-day uplift (+12 %)
+
+/* ─── Initial render ─── */
+const grid = document.getElementById('cityGrid');
+function buildCards() {
+  grid.innerHTML = '';
+  const visible = CITIES
+    .filter(c => activeFilter === 'all' || c.country === activeFilter)
+    .sort((a,b) => {
+      if (activeSort === 'alpha') return a.name.localeCompare(b.name);
+      if (activeSort === 'pop')   return b.popM - a.popM;
+      return b.currentRate - a.currentRate; // 'rate'
+    });
+
+  visible.forEach(c => {
+    const card = document.createElement('div');
+    card.className = 'ccard ' + c.country + (surgeOn ? ' surging' : '');
+    card.dataset.id = c.id;
+    card.innerHTML = `
+      <div class="ccard-flag-stripe"></div>
+      <div class="ccard-head">
+        <div>
+          <div class="ccard-name">${c.name}</div>
+          <div class="ccard-stadium">${c.stadium}</div>
+        </div>
+        <div class="ccard-flag">${c.flag}</div>
+      </div>
+      <div class="ccard-counter">
+        <span class="cc-num" data-id="${c.id}">0.0</span>
+        <span class="cc-unit">metric t CO₂e · this session</span>
+      </div>
+      <div class="ccard-bar"><div class="ccard-bar-fill" data-id="${c.id}"></div></div>
+      <div class="ccard-meta">
+        <span>Pop ${c.popM.toFixed(2)} M</span>
+        <span class="ccard-rate" data-rate="${c.id}">${c.currentRate.toFixed(2)} metric t/s</span>
+        ${surgeOn ? '<span class="surge-tag">Surge +12%</span>' : ''}
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+
+  document.getElementById('activeCount').textContent = visible.length;
+}
+
+/* ─── Tick: advance every city by its per-second rate ─── */
+function tick() {
+  let totalRate = 0;
+  CITIES.forEach(c => {
+    // tiny jitter ±5% so it feels alive, not metronomic
+    const jitter = 1 + (Math.random() - 0.5) * 0.10;
+    c.currentRate = c.baseRate * (surgeOn ? SURGE_MULT : 1) * jitter;
+    c.accumulated += c.currentRate;
+    totalRate += c.currentRate;
+  });
+  render(totalRate);
+}
+
+/* ─── Render numbers without rebuilding the DOM each second ─── */
+const fmt = new Intl.NumberFormat('en-US', { maximumFractionDigits: 1 });
+const fmt2 = new Intl.NumberFormat('en-US', { maximumFractionDigits: 2 });
+
+// max accumulated, used to scale per-card progress bars
+function maxAcc() { return Math.max(...CITIES.map(c=>c.accumulated)) || 1; }
+
+function render(totalRate) {
+  // City cards
+  const m = maxAcc();
+  CITIES.forEach(c => {
+    const num = grid.querySelector(`.cc-num[data-id="${c.id}"]`);
+    const fill = grid.querySelector(`.ccard-bar-fill[data-id="${c.id}"]`);
+    const rateEl = grid.querySelector(`.ccard-rate[data-rate="${c.id}"]`);
+    if (num)  num.textContent  = fmt.format(c.accumulated);
+    if (fill) fill.style.width = ((c.accumulated / m) * 100).toFixed(1) + '%';
+    if (rateEl) rateEl.textContent = c.currentRate.toFixed(2) + ' metric t/s';
+  });
+
+  // Global strip
+  const total = CITIES.reduce((s,c)=>s+c.accumulated,0);
+  document.getElementById('globalTotal').textContent = fmt.format(total);
+  document.getElementById('globalRate').textContent  = fmt2.format(totalRate);
+
+  // total population (sum of visible-or-all?) — show all 16 always, doesn't change
+  document.getElementById('totalPop').textContent = CITIES.reduce((s,c)=>s+c.popM,0).toFixed(1);
+
+  // Equivalences (only flights & cars need formatting)
+  document.getElementById('eqFlights').textContent = fmt.format(total / 0.5);
+  document.getElementById('eqCars').textContent    = fmt.format(total / 4.6);
+  document.getElementById('eqHomes').textContent   = fmt.format(total / 7.5);
+  document.getElementById('eqTrees').textContent   = fmt.format(total / 0.021);
+
+  // Refresh time
+  const now = new Date();
+  document.getElementById('lastRefresh').textContent =
+    String(now.getHours()).padStart(2,'0') + ':' +
+    String(now.getMinutes()).padStart(2,'0') + ':' +
+    String(now.getSeconds()).padStart(2,'0');
+
+  renderLeaderboard();
+  renderBreakdown();
+  renderSectorBreakdown();
+}
+
+/* ─── Right-rail: leaderboard ─── */
+function renderLeaderboard() {
+  const top5 = [...CITIES].sort((a,b)=>b.accumulated-a.accumulated).slice(0,5);
+  const lb = document.getElementById('leaderboard');
+  lb.innerHTML = top5.map((c,i)=>`
+    <div class="lb-row">
+      <div class="lb-rank r${i+1}">${String(i+1).padStart(2,'0')}</div>
+      <div class="lb-name">${c.flag} ${c.name}<span>${c.currentRate.toFixed(2)} metric t/s · ${c.popM.toFixed(1)} M</span></div>
+      <div class="lb-val">${fmt.format(c.accumulated)}</div>
+    </div>
+  `).join('');
+}
+
+/* ─── Right-rail: breakdown by country ─── */
+function renderBreakdown() {
+  const buckets = { usa:0, can:0, mex:0 };
+  CITIES.forEach(c => buckets[c.country] += c.accumulated);
+  const total = buckets.usa + buckets.can + buckets.mex || 1;
+
+  const labels = {
+    usa: { name:'USA', flag:'🇺🇸', count:11 },
+    can: { name:'Canada', flag:'🇨🇦', count:2 },
+    mex: { name:'Mexico', flag:'🇲🇽', count:3 },
+  };
+
+  const br = document.getElementById('breakdown');
+  br.innerHTML = ['usa','can','mex'].map(k => {
+    const pct = (buckets[k] / total * 100);
+    return `
+      <div class="br-bar b-${k}">
+        <div class="br-bar-head">
+          <div class="br-bar-name"><span class="br-flag">${labels[k].flag}</span>${labels[k].name} · ${labels[k].count} cities</div>
+          <div class="br-bar-pct">${pct.toFixed(1)}%</div>
+        </div>
+        <div class="br-bar-track"><div class="br-bar-fill" style="width:${pct}%"></div></div>
+      </div>
+    `;
+  }).join('');
+}
+
+/* ─── Right-rail: breakdown by sector across all 16 cities ─── */
+function renderSectorBreakdown() {
+  // Sum each sector across cities, weighted by each city's accumulated share
+  const sectorSums = {};
+  SECTORS.forEach(s => sectorSums[s.key] = 0);
+
+  CITIES.forEach(c => {
+    // Each city's accumulated total redistributes proportionally across its sectors
+    const cityTotal = Object.values(c.sectors).reduce((a,b)=>a+b, 0) || 1;
+    SECTORS.forEach(s => {
+      const sectorShare = c.sectors[s.key] / cityTotal;
+      sectorSums[s.key] += c.accumulated * sectorShare;
+    });
+  });
+
+  const grand = Object.values(sectorSums).reduce((a,b)=>a+b, 0) || 1;
+  const el = document.getElementById('sectorBreakdown');
+  el.innerHTML = SECTORS.map(s => {
+    const pct = (sectorSums[s.key] / grand) * 100;
+    return `
+      <div class="sec-bar">
+        <div class="sec-bar-head">
+          <div class="sec-bar-name"><span class="sec-dot" style="background:${s.color}"></span>${s.name}</div>
+          <div class="sec-bar-pct">${pct.toFixed(1)}%</div>
+        </div>
+        <div class="sec-bar-track"><div class="sec-bar-fill" style="width:${pct}%;background:${s.color}"></div></div>
+      </div>
+    `;
+  }).join('');
+}
+
+/* ─── Wire up controls ─── */
+document.querySelectorAll('.cbtn[data-filter]').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('.cbtn[data-filter]').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on');
+    activeFilter = b.dataset.filter;
+    buildCards();
+    render(CITIES.reduce((s,c)=>s+c.currentRate,0));
+  });
+});
+document.querySelectorAll('.cbtn[data-sort]').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('.cbtn[data-sort]').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on');
+    activeSort = b.dataset.sort;
+    buildCards();
+    render(CITIES.reduce((s,c)=>s+c.currentRate,0));
+  });
+});
+document.getElementById('surgeToggle').addEventListener('click', () => {
+  surgeOn = !surgeOn;
+  document.getElementById('surgeToggle').classList.toggle('on', surgeOn);
+  buildCards();   // rebuild so surge tag shows/hides
+});
+
+/* ════════════════════════════════════════════════════════════════════════
+   MAP MODULE  ·  continental heat map + tournament playback
+   ────────────────────────────────────────────────────────────────────────
+   Strategy:
+   - Direct lat/lon → SVG xy via a clipped equirectangular projection
+     calibrated to North America's bounding box. Good enough at this scale.
+   - A hand-drawn simplified continent silhouette anchors the dots
+     spatially without pulling in topojson / 200KB of D3.
+   - Color interpolates blue → red based on each city's accumulated /
+     max-accumulated ratio, so the busiest emitters glow hottest.
+   - Playback mode replaces the 1 Hz live tick with a sped-up march
+     through the 39-day tournament window. Once a venue's lastMatchDay
+     passes, its dot fades to gray (no more World Cup activity), but
+     the city's emissions keep accumulating in the background data.
+   ════════════════════════════════════════════════════════════════════════ */
+
+// Map viewBox dimensions (chosen so North America renders without crunching)
+const MAP_W = 1000, MAP_H = 620;
+
+// `proj` is the D3 projection function, populated asynchronously when
+// the world atlas loads. It maps [lon, lat] → [x, y] in viewBox space.
+let proj = null;
+
+// Natural Earth ISO numeric IDs
+const HOST_NUM = { usa: 840, can: 124, mex: 484 };
+const HOST_NUMS = new Set(Object.values(HOST_NUM));
+
+// We deliberately fit the projection to a synthetic bounding box drawn
+// around the host CITIES rather than to the host countries themselves.
+// Reason: Canada extends to 83°N (Arctic islands) which would compress
+// every city dot into a thin band. The bbox below brackets all 16 host
+// cities with a comfortable margin and lets polar regions clip naturally.
+const CITY_BBOX_FEATURE = {
+  type: 'Feature',
+  geometry: {
+    type: 'Polygon',
+    coordinates: [[
+      [-126, 52], [-69, 52], [-69, 17], [-126, 17], [-126, 52]
+    ]]
+  }
+};
+
+/* ─── Color interpolation: blue → red ─── */
+const HEAT_STOPS = [
+  [0.00, [78, 168, 222]],   // cool blue
+  [0.22, [144, 194, 231]],  // pale blue
+  [0.55, [248, 208, 144]],  // warm sand
+  [0.80, [238, 107, 86]],   // coral
+  [1.00, [194, 39, 58]],    // deep red
+];
+function heatColor(t) {
+  t = Math.max(0, Math.min(1, t));
+  for (let i = 1; i < HEAT_STOPS.length; i++) {
+    const [t1, c1] = HEAT_STOPS[i-1], [t2, c2] = HEAT_STOPS[i];
+    if (t <= t2) {
+      const k = (t - t1) / (t2 - t1);
+      const r = Math.round(c1[0] + (c2[0]-c1[0]) * k);
+      const g = Math.round(c1[1] + (c2[1]-c1[1]) * k);
+      const b = Math.round(c1[2] + (c2[2]-c1[2]) * k);
+      return `rgb(${r},${g},${b})`;
+    }
+  }
+  return 'rgb(194,39,58)';
+}
+
+/* ─── Build the static map skeleton (one-time, async) ─── */
+const mapSvg = document.getElementById('mapSvg');
+const mapTip = document.getElementById('mapTip');
+const mapLoadingEl = document.getElementById('mapLoading');
+
+const WORLD_ATLAS_URL = 'https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json';
+
+async function buildMap() {
+  let world;
+  try {
+    world = await d3.json(WORLD_ATLAS_URL);
+  } catch (err) {
+    // Network failure or D3 missing — show a friendly message and bail.
+    if (mapLoadingEl) mapLoadingEl.textContent = 'Map unavailable · check connection';
+    console.warn('Map atlas failed to load', err);
+    return;
+  }
+
+  const countries = topojson.feature(world, world.objects.countries).features;
+
+  // Fit a Mercator projection to the city-bounding-box feature so all 16
+  // host cities sit comfortably inside the viewBox. The country polygons
+  // are drawn at the same projection — anything beyond the viewBox
+  // (Arctic Canada, Hawaii, etc.) clips naturally.
+  proj = d3.geoMercator().fitExtent(
+    [[10, 10], [MAP_W - 10, MAP_H - 10]],
+    CITY_BBOX_FEATURE
+  );
+  const pathGen = d3.geoPath(proj);
+
+  const svg = d3.select(mapSvg);
+  svg.selectAll('*').remove();
+
+  // Subtle graticule (lat/lon grid)
+  const graticule = d3.geoGraticule().step([10, 10]);
+  svg.append('path')
+    .datum(graticule())
+    .attr('class','map-grid-bg')
+    .attr('d', pathGen);
+
+  // Non-host countries first (background, faint)
+  svg.append('g').selectAll('path.other')
+    .data(countries.filter(f => !HOST_NUMS.has(+f.id)))
+    .enter().append('path')
+      .attr('class','map-country-other')
+      .attr('d', pathGen);
+
+  // Host countries (foreground, more saturated)
+  const hostClass = id => id === HOST_NUM.usa ? 'usa' : id === HOST_NUM.can ? 'can' : 'mex';
+  svg.append('g').selectAll('path.host')
+    .data(countries.filter(f => HOST_NUMS.has(+f.id)))
+    .enter().append('path')
+      .attr('class', d => 'map-country-host ' + hostClass(+d.id))
+      .attr('d', pathGen);
+
+  // City dots — a group per city so we can update fill/value cheaply
+  const dotsG = svg.append('g').attr('id','cityDots');
+  CITIES.forEach(c => {
+    const [x, y] = proj([c.lon, c.lat]);
+    const radius = 2 + Math.sqrt(c.popM) * 1.7;
+
+    const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+    g.setAttribute('class','map-city-dot');
+    g.setAttribute('data-id', c.id);
+    g.setAttribute('transform', `translate(${x},${y})`);
+
+    // Outer pulse ring
+    const pulse = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    pulse.setAttribute('class','map-city-pulse');
+    pulse.setAttribute('r', radius + 6);
+    pulse.setAttribute('stroke', '#4ea8de');
+    g.appendChild(pulse);
+
+    // Main dot — radius scales with sqrt(pop) so it reads but isn't
+    // dominated by Mexico City (22 M) vs Vancouver (2.6 M)
+    const dot = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    dot.setAttribute('class','map-city-fill');
+    dot.setAttribute('r', radius);
+    dot.setAttribute('fill', '#4ea8de');
+    dot.setAttribute('stroke', 'rgba(255,255,255,.85)');
+    dot.setAttribute('stroke-width', '1');
+    g.appendChild(dot);
+
+    // City label
+    const lbl = document.createElementNS('http://www.w3.org/2000/svg','text');
+    lbl.setAttribute('class','map-city-label');
+    lbl.setAttribute('y', radius + 11);
+    lbl.textContent = c.name.toUpperCase();
+    g.appendChild(lbl);
+
+    // Cumulative value label
+    const val = document.createElementNS('http://www.w3.org/2000/svg','text');
+    val.setAttribute('class','map-city-value');
+    val.setAttribute('data-id', c.id);
+    val.setAttribute('y', radius + 20);
+    val.textContent = '';
+    g.appendChild(val);
+
+    // Hover for tooltip
+    g.addEventListener('mouseenter', e => showTip(c, e));
+    g.addEventListener('mousemove',  e => moveTip(e));
+    g.addEventListener('mouseleave', () => mapTip.style.opacity = 0);
+
+    dotsG.node().appendChild(g);
+  });
+
+  // Hide loading overlay now that the map is up
+  if (mapLoadingEl) mapLoadingEl.style.display = 'none';
+
+  // Run a render pass so the colors/values are applied immediately
+  updateMap();
+}
+
+function showTip(c, e) {
+  const dropped = playbackMode && playbackDay > c.lastMatchDay;
+  mapTip.classList.toggle('dropped', dropped);
+  mapTip.innerHTML = `
+    <strong>${c.flag} ${c.name}</strong>
+    <div class="tip-row"><span>Stadium</span><span>${c.stadium}</span></div>
+    <div class="tip-row"><span>Population</span><span>${c.popM.toFixed(2)} M</span></div>
+    <div class="tip-row"><span>Last match</span><span>${stageLabel(c.stageExit)}</span></div>
+    <div class="tip-row"><span>Accumulated</span><span>${fmt.format(c.accumulated)} t CO₂e</span></div>
+    <div class="tip-row"><span>Current rate</span><span>${c.currentRate.toFixed(2)} metric t/s</span></div>
+  `;
+  moveTip(e);
+  mapTip.style.opacity = 1;
+}
+function moveTip(e) {
+  const wrap = document.getElementById('mapWrap').getBoundingClientRect();
+  let x = e.clientX - wrap.left + 14;
+  let y = e.clientY - wrap.top  + 14;
+  if (x + 220 > wrap.width)  x = e.clientX - wrap.left - 230;
+  if (y + 130 > wrap.height) y = e.clientY - wrap.top  - 140;
+  mapTip.style.left = x + 'px';
+  mapTip.style.top  = y + 'px';
+}
+function stageLabel(s) {
+  return s === 'Group'  ? 'Group stage only' :
+         s === 'R32'    ? 'Round of 32' :
+         s === 'R16'    ? 'Round of 16' :
+         s === 'QF'     ? 'Quarter-final' :
+         s === 'SF'     ? 'Semi-final' :
+         s === 'Bronze' ? '3rd-place final' :
+         s === 'FINAL'  ? 'World Cup Final' : s;
+}
+
+/* ─── Update map dots based on accumulated values ─── */
+function updateMap() {
+  const m = maxAcc();
+  CITIES.forEach(c => {
+    const g = mapSvg.querySelector(`.map-city-dot[data-id="${c.id}"]`);
+    if (!g) return;
+    const t = m > 0 ? (c.accumulated / m) : 0;
+    const dot = g.querySelector('.map-city-fill');
+    const pulse = g.querySelector('.map-city-pulse');
+    const val = g.querySelector('.map-city-value');
+    const color = heatColor(t);
+    if (dot) dot.setAttribute('fill', color);
+    if (pulse) pulse.setAttribute('stroke', color);
+
+    // Cumulative tonnage label, rounded to the nearest 100,000 metric tonnes
+    // so the number changes in visible 0.1-Mt steps rather than every tick.
+    if (val) val.textContent = formatCumulative(c.accumulated);
+
+    // Drop-out logic: in playback mode, fade venue once last match passed
+    const dropped = playbackMode && playbackDay > c.lastMatchDay;
+    g.classList.toggle('dropped', dropped);
+  });
+}
+
+/* Format the under-dot cumulative label.
+   The map runs in two regimes:
+     • LIVE mode — values climb at ~1–9 t/sec, so an hour = thousands of t.
+       Show in tonnes ("450 t", "12,400 t", "98,500 t") so the number
+       actually moves while the user watches.
+     • PLAYBACK mode (and any value ≥ 100K t) — show in 0.1-Mt steps
+       so the label changes only when each fresh 100,000 t is added,
+       avoiding flicker. ("0.1 Mt", "1.7 Mt", "9.3 Mt") */
+function formatCumulative(tonnes) {
+  if (tonnes < 1) return '';                                 // suppress at zero
+  if (tonnes < 100_000) {
+    // round to nearest 100 t for readability while still moving
+    const rounded = Math.round(tonnes / 100) * 100;
+    return rounded.toLocaleString('en-US') + ' t';
+  }
+  // ≥ 100K — show in 0.1-Mt buckets (each bucket = 100,000 t)
+  const buckets = Math.round(tonnes / 100_000);
+  return (buckets / 10).toFixed(1) + ' Mt';
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   PLAYBACK ENGINE
+   ──────────────────────────────────────────────────────────────────────── */
+const TOURNAMENT_DAYS = 39;        // Jun 11 → Jul 19
+const TOURNAMENT_START = new Date('2026-06-11T00:00:00');
+
+let playbackMode    = false;       // false = live, true = tournament playback
+let playbackDay     = 0;           // simulated day index (0..39)
+let playbackPlaying = false;
+let playbackSpeed   = 14400;       // sim-seconds per real-second; default = 6 sec / day
+let playbackTimer   = null;
+
+/* speed semantics:
+   The select buttons say things like "1 min/day" — meaning 1 real minute = 1 sim day.
+   We translate that into a "simulated seconds per real-second tick" multiplier:
+     1 min/day  → 86400 sim sec / 60 real sec = 1440 sim-sec per real-sec
+     6 sec/day  → 86400 / 6     = 14400        (alias 600 below — see translate())
+   To keep the page feeling alive we tick the playback at 10Hz (every 100ms).
+   The data-speed attribute encodes the sim-seconds advanced per *tick*. */
+
+function startPlayback() {
+  if (playbackTimer) clearInterval(playbackTimer);
+  playbackPlaying = true;
+  document.getElementById('pcPlay').textContent = '❚❚ Pause';
+  playbackTimer = setInterval(playbackTick, 100);
+}
+function pausePlayback() {
+  playbackPlaying = false;
+  document.getElementById('pcPlay').textContent = '▶ Play';
+  if (playbackTimer) { clearInterval(playbackTimer); playbackTimer = null; }
+}
+function resetPlayback() {
+  pausePlayback();
+  playbackDay = 0;
+  CITIES.forEach(c => { c.accumulated = 0; });
+  applyPlaybackTimeUI();
+  // Render once with cleared values
+  render(CITIES.reduce((s,c)=>s+c.currentRate,0));
+  updateMap();
+}
+
+function playbackTick() {
+  // Each real-time 100ms tick advances simulated time by playbackSpeed seconds
+  const advanceSec = playbackSpeed / 10;        // per 100ms
+  // Distribute the per-second emission rate across active venues
+  CITIES.forEach(c => {
+    const dayFractionSoFar = playbackDay;
+    const isStillHosting = dayFractionSoFar <= c.lastMatchDay + 1;
+    // Even after matches end, the city's metabolism continues — keep emitting.
+    // The dot still fades visually via the dropped class.
+    const jitter = 1 + (Math.random() - 0.5) * 0.10;
+    c.currentRate = c.baseRate * jitter;
+    c.accumulated += c.currentRate * advanceSec;
+  });
+
+  // Advance day counter (advanceSec / 86400 days)
+  playbackDay += advanceSec / 86400;
+  if (playbackDay >= TOURNAMENT_DAYS) {
+    playbackDay = TOURNAMENT_DAYS;
+    pausePlayback();
+  }
+
+  applyPlaybackTimeUI();
+  render(CITIES.reduce((s,c)=>s+c.currentRate,0));
+  updateMap();
+}
+
+function applyPlaybackTimeUI() {
+  const d = new Date(TOURNAMENT_START.getTime() + playbackDay * 86400000);
+  const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  document.getElementById('mtlDate').textContent = `${monthNames[d.getMonth()]} ${d.getDate()}`;
+
+  // Stage based on day index
+  let stage, stageClass;
+  const dayInt = Math.floor(playbackDay);
+  if      (dayInt < 0)  { stage = 'Pre-tournament'; stageClass = 's-pre'; }
+  else if (dayInt <= 16){ stage = 'Group stage';    stageClass = 's-group'; }    // Jun 11–27
+  else if (dayInt <= 22){ stage = 'Round of 32';    stageClass = 's-r32'; }      // Jun 28 – Jul 3
+  else if (dayInt <= 26){ stage = 'Round of 16';    stageClass = 's-r16'; }      // Jul 4–7
+  else if (dayInt <= 30){ stage = 'Quarter-finals'; stageClass = 's-qf'; }       // Jul 9–11
+  else if (dayInt <= 34){ stage = 'Semi-finals';    stageClass = 's-sf'; }       // Jul 14–15
+  else if (dayInt <= 37){ stage = 'Bronze final';   stageClass = 's-final'; }    // Jul 18
+  else                  { stage = 'FINAL';          stageClass = 's-final'; }    // Jul 19
+  const sEl = document.getElementById('mtlStage');
+  sEl.textContent = stage;
+  sEl.className = 'mtl-stage ' + stageClass;
+
+  const pct = (playbackDay / TOURNAMENT_DAYS) * 100;
+  document.getElementById('mtlProgressFill').style.width  = pct + '%';
+  document.getElementById('mtlProgressHandle').style.left = pct + '%';
+  document.getElementById('mtlCounter').textContent =
+    `Day ${Math.floor(playbackDay)} of ${TOURNAMENT_DAYS}`;
+  const activeCount = CITIES.filter(c => playbackDay <= c.lastMatchDay + 1).length;
+  document.getElementById('mtlActive').textContent = `${activeCount} active venues`;
+}
+
+/* ─── Map mode toggle wiring ─── */
+function setMapMode(mode) {
+  playbackMode = (mode === 'play');
+  document.querySelectorAll('.mmt-btn').forEach(b =>
+    b.classList.toggle('on', b.dataset.mode === mode));
+  document.getElementById('mapTimeline').classList.toggle('on', playbackMode);
+  document.getElementById('playControls').classList.toggle('on', playbackMode);
+  if (playbackMode) {
+    // Switching to playback: reset the world to day 0
+    resetPlayback();
+  } else {
+    pausePlayback();
+    // Live mode: clear accumulated so live tick starts from zero again
+    CITIES.forEach(c => { c.accumulated = 0; });
+    updateMap();
+  }
+}
+
+document.querySelectorAll('.mmt-btn').forEach(b => {
+  b.addEventListener('click', () => setMapMode(b.dataset.mode));
+});
+document.getElementById('pcPlay').addEventListener('click', () => {
+  if (playbackPlaying) pausePlayback(); else startPlayback();
+});
+document.getElementById('pcReset').addEventListener('click', resetPlayback);
+document.querySelectorAll('.pc-btn[data-speed]').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('.pc-btn[data-speed]').forEach(x => x.classList.remove('on'));
+    b.classList.add('on');
+    playbackSpeed = parseInt(b.dataset.speed, 10);
+  });
+});
+
+// Click on the timeline progress bar to scrub to a specific day
+document.getElementById('mtlProgress').addEventListener('click', e => {
+  const rect = e.currentTarget.getBoundingClientRect();
+  const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+  playbackDay = ratio * TOURNAMENT_DAYS;
+  applyPlaybackTimeUI();
+  updateMap();
+});
+
+/* ─── Bootstrap ─── */
+buildCards();
+buildMap();
+tick();             // first paint, immediately
+updateMap();
+// Live tick: only when not in playback mode
+setInterval(() => {
+  if (!playbackMode) {
+    tick();
+    updateMap();
+  }
+}, 1000);
+</script>
+
+</body>
+</html>

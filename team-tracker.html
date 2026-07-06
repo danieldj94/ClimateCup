@@ -1,0 +1,3281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Team Tracker · 48 Nations · WC Climate 2026</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#f5f7fa;--surface:#fff;--border:#dde3ec;
+      --green:#00a86b;--green-lt:#e6f7f1;--green-dk:#007a4d;
+      --red:#e8273a;--red-lt:#fdeaec;
+      --amber:#e07b00;--amber-lt:#fdf3e3;
+      --blue:#1a6fdb;--blue-lt:#e8f0fc;
+      --text:#0f1c2e;--muted:#6b7f99;
+      --dark:#0a1220;--gold:#c9a84c;--gold-lt:#fdf8ed;
+      --hero:'Bebas Neue',sans-serif;--body:'DM Sans',sans-serif;--mono:'DM Mono',monospace;
+    }
+    html{scroll-behavior:smooth}
+    body{background:var(--bg);color:var(--text);font-family:var(--body);overflow-x:hidden}
+
+    /* NAV */
+    nav{position:fixed;top:0;left:0;right:0;z-index:400;display:flex;align-items:center;justify-content:space-between;padding:1.1rem 3rem;background:rgba(10,18,32,.92);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,.06)}
+    .nav-logo{font-family:var(--mono);font-size:.75rem;color:var(--green);letter-spacing:.12em;text-transform:uppercase;text-decoration:none;display:flex;align-items:center;gap:.6rem}
+    .nav-logo::before{content:'';width:8px;height:8px;background:var(--green);border-radius:50%;animation:pulse 2s ease infinite}
+    @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.7)}}
+    .nav-links{display:flex;gap:2rem;list-style:none}
+    .nav-links a{font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.4);text-decoration:none;transition:color .2s;font-family:var(--mono)}
+    .nav-links a:hover{color:rgba(255,255,255,.8)}
+    .nav-links a.active{color:var(--green)}
+
+    /* HEADER */
+    .page-header{padding:6rem 3rem 2rem;background:var(--dark);position:relative;overflow:hidden;min-height:280px;display:flex;flex-direction:column;justify-content:flex-end}
+    .ph-bg{position:absolute;inset:0;background-image:url('https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=1800&auto=format&fit=crop&q=80');background-size:cover;background-position:center 45%;opacity:.16}
+    .ph-overlay{position:absolute;inset:0;background:linear-gradient(to top,var(--dark) 30%,rgba(10,18,32,.55) 70%,rgba(10,18,32,.3)),linear-gradient(90deg,rgba(10,18,32,.7) 40%,transparent)}
+    .ph-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.02) 1px,transparent 1px);background-size:60px 60px;pointer-events:none}
+    .htag{font-family:var(--mono);font-size:.68rem;letter-spacing:.22em;text-transform:uppercase;color:var(--amber);margin-bottom:.8rem;position:relative;display:flex;align-items:center;gap:.7rem}
+    .htag::after{content:'';flex:0 0 40px;height:1px;background:var(--amber);opacity:.45}
+    .lab-badge{display:inline-flex;align-items:center;gap:.45rem;padding:.22rem .55rem;background:rgba(224,123,0,.13);border:1px solid rgba(224,123,0,.32);border-radius:2px;font-family:var(--mono);font-size:.5rem;letter-spacing:.16em;color:var(--amber);text-transform:uppercase}
+    .lab-badge::before{content:'';width:5px;height:5px;background:var(--amber);border-radius:50%;animation:pulse 1.6s ease infinite}
+    .page-header h1{font-family:var(--hero);font-size:clamp(2.4rem,6vw,4.5rem);line-height:.95;text-transform:uppercase;color:#fff;position:relative;letter-spacing:-.005em}
+    .page-header h1 em{color:var(--amber);font-style:normal}
+    .page-header h1 .outline{-webkit-text-stroke:1px rgba(255,255,255,.28);color:transparent}
+    .page-header p{margin-top:.8rem;max-width:680px;font-size:.88rem;line-height:1.7;color:rgba(255,255,255,.55);font-weight:300;position:relative}
+    .header-meta{position:absolute;top:5.5rem;right:3rem;font-family:var(--mono);font-size:.55rem;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.35);text-align:right;line-height:1.7;border-right:2px solid var(--amber);padding-right:.85rem}
+    .header-year{position:absolute;bottom:1.2rem;right:3rem;font-family:var(--hero);font-size:8rem;line-height:1;color:rgba(255,255,255,.03);pointer-events:none}
+
+    /* TEAM PICKER STRIP */
+    .picker-strip{background:var(--dark);border-top:1px solid rgba(255,255,255,.06);border-bottom:1px solid rgba(255,255,255,.06);padding:1.4rem 3rem;display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap}
+    .picker-label{font-family:var(--mono);font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.55);flex-shrink:0}
+    .picker-select-wrap{position:relative;flex:1;min-width:260px;max-width:420px}
+    .team-select{width:100%;padding:.7rem 2.5rem .7rem 1rem;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);color:#fff;font-family:var(--body);font-size:.95rem;font-weight:500;border-radius:2px;appearance:none;-webkit-appearance:none;cursor:pointer;transition:all .18s}
+    .team-select:hover,.team-select:focus{background:rgba(255,255,255,.1);border-color:var(--green);outline:none}
+    .team-select option{background:var(--dark);color:#fff}
+    .picker-select-wrap::after{content:'▾';position:absolute;right:1rem;top:50%;transform:translateY(-50%);color:rgba(255,255,255,.5);font-size:.75rem;pointer-events:none}
+    .picker-stats{display:flex;gap:2rem;font-family:var(--mono);font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.4)}
+    .picker-stats strong{color:var(--gold);font-weight:500;display:block;font-family:var(--hero);font-size:1.4rem;letter-spacing:-.005em;margin-top:.15rem}
+    .picker-filter{display:flex;gap:.4rem;flex-wrap:wrap}
+    .fbtn{padding:.32rem .7rem;border:1px solid rgba(255,255,255,.15);background:transparent;font-family:var(--mono);font-size:.55rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.55);cursor:pointer;border-radius:2px;transition:all .18s}
+    .fbtn:hover{border-color:rgba(255,255,255,.4);color:#fff}
+    .fbtn.on{background:var(--green);border-color:var(--green);color:#fff}
+
+    /* MAIN LAYOUT */
+    .main{padding:1.5rem 3rem 3rem;display:grid;grid-template-columns:1fr 380px;gap:1.5rem;align-items:start}
+    .left-col{min-width:0}
+    .right-col{position:sticky;top:5rem}
+
+    /* MAP */
+    .map-head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:.85rem;flex-wrap:wrap;gap:1rem}
+    .map-title{font-family:var(--mono);font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--text);display:flex;align-items:center;gap:.55rem}
+    .map-title .live-dot{width:8px;height:8px;border-radius:50%;background:var(--green);animation:pulse 1.6s ease infinite}
+    .map-title em{font-style:normal;color:var(--muted);font-weight:400;text-transform:none;letter-spacing:.02em}
+    .map-legend-inline{display:flex;gap:1rem;font-family:var(--mono);font-size:.55rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);flex-wrap:wrap}
+    .lg-item{display:inline-flex;align-items:center;gap:.4rem}
+    .lg-swatch{display:inline-block;width:14px;height:14px;border-radius:50%;border:1.5px solid #fff}
+    .lg-swatch.base{background:var(--gold);border-color:var(--gold);width:12px;height:12px;border-radius:2px;transform:rotate(45deg)}
+    .lg-swatch.stadium{background:var(--red)}
+    .lg-swatch.played{background:var(--muted);opacity:.6}
+    .lg-line{display:inline-block;width:22px;height:2px}
+    .lg-line.bus{background:var(--amber)}
+    .lg-line.flight{background:var(--blue);background-image:linear-gradient(90deg,var(--blue) 60%,transparent 60%);background-size:6px 2px}
+
+    .map-wrap{position:relative;background:linear-gradient(180deg,#0d1626 0%,#0a1220 100%);border:1px solid var(--border);border-radius:3px;overflow:hidden;height:540px}
+    .map-svg{width:100%;height:100%;display:block}
+    .map-grid-bg{stroke:rgba(255,255,255,.04);stroke-width:.5;fill:none}
+    .map-country-host{fill:rgba(255,255,255,.06);stroke:rgba(255,255,255,.22);stroke-width:.55;stroke-linejoin:round}
+    .map-country-other{fill:rgba(255,255,255,.018);stroke:rgba(255,255,255,.07);stroke-width:.4;stroke-linejoin:round}
+    .map-loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.45);font-family:var(--mono);font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;pointer-events:none}
+    .map-loading::before{content:'';display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--amber);margin-right:.7rem;animation:pulse 1.4s ease infinite}
+
+    /* stadium dot (default state: dim gray) */
+    .stadium-dot{fill:rgba(255,255,255,.18);stroke:rgba(255,255,255,.35);stroke-width:1;transition:all .3s ease;cursor:default}
+    .stadium-dot.match{fill:var(--red);stroke:#fff;stroke-width:1.5}
+    .stadium-dot.match.upcoming{fill:none;stroke:var(--red);stroke-width:2;stroke-dasharray:2 2}
+    .stadium-label{font-family:var(--mono);font-size:.48rem;letter-spacing:.06em;fill:rgba(255,255,255,.35);text-transform:uppercase;pointer-events:none;text-anchor:middle}
+    .stadium-label.match{fill:rgba(255,255,255,.9);font-weight:500}
+
+    /* team base (gold diamond) */
+    .base-marker{fill:var(--gold);stroke:#fff;stroke-width:1.5;cursor:default}
+    .base-glow{fill:none;stroke:var(--gold);stroke-width:1;opacity:.4}
+    .base-label{font-family:var(--mono);font-size:.55rem;letter-spacing:.08em;fill:var(--gold);text-transform:uppercase;pointer-events:none;text-anchor:middle;font-weight:500}
+
+    /* travel lines */
+    .line-bus{stroke:var(--amber);stroke-width:1.8;fill:none;opacity:.75}
+    .line-flight{stroke:#6aabff;stroke-width:1.5;fill:none;opacity:.7;stroke-dasharray:4 3}
+    .line-upcoming{opacity:.4;stroke-dasharray:2 4}
+
+    /* map tooltip */
+    .map-tip{position:absolute;background:var(--text);color:#fff;padding:.5rem .75rem;font-family:var(--mono);font-size:.6rem;border-radius:2px;pointer-events:none;opacity:0;transition:opacity .12s;white-space:nowrap;z-index:30;line-height:1.6;border-left:2px solid var(--gold);letter-spacing:.02em}
+    .map-tip strong{color:var(--gold);font-weight:500;display:block;margin-bottom:.2rem;font-family:var(--hero);font-size:.85rem;letter-spacing:.02em;text-transform:uppercase}
+    .tip-row{display:flex;justify-content:space-between;gap:1rem}
+    .tip-row span:last-child{color:#fff;font-weight:500}
+
+    /* map footer caption */
+    .map-caption{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.85rem;margin-top:.55rem;padding:.55rem .9rem;background:var(--surface);border:1px solid var(--border);border-radius:3px;font-family:var(--mono);font-size:.55rem;letter-spacing:.08em;color:var(--muted);line-height:1.6}
+    .map-caption strong{color:var(--text);font-weight:500;text-transform:none;letter-spacing:.04em;font-size:.62rem}
+
+    /* RIGHT COLUMN — team info panel */
+    .team-hero{background:var(--dark);color:#fff;padding:1.4rem 1.4rem 1.2rem;border-radius:3px 3px 0 0;position:relative;overflow:hidden}
+    .team-hero::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--gold),var(--amber),var(--red))}
+    .team-hero-flag{font-size:2.6rem;line-height:1;margin-bottom:.35rem}
+    .team-hero-name{font-family:var(--hero);font-size:2rem;line-height:1;text-transform:uppercase;letter-spacing:-.005em;color:#fff}
+    .team-hero-meta{display:flex;gap:1rem;margin-top:.6rem;font-family:var(--mono);font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.5)}
+    .team-hero-meta strong{color:#fff;font-weight:500}
+    .status-chip{display:inline-flex;align-items:center;gap:.4rem;padding:.28rem .55rem;font-family:var(--mono);font-size:.55rem;letter-spacing:.14em;text-transform:uppercase;border-radius:2px;margin-top:.6rem;font-weight:500}
+    .status-chip.active{background:rgba(0,168,107,.18);color:#7ed8b3}
+    .status-chip.active::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 1.6s ease infinite}
+    .status-chip.eliminated{background:rgba(255,255,255,.08);color:rgba(255,255,255,.5)}
+    .status-chip.eliminated::before{content:'◆';color:rgba(255,255,255,.35);font-size:.5rem}
+    .status-chip.winner{background:rgba(201,168,76,.25);color:#f0d989}
+    .status-chip.winner::before{content:'★';color:var(--gold)}
+
+    .emissions-panel{background:var(--surface);border:1px solid var(--border);border-top:none;padding:1.3rem 1.4rem;border-radius:0 0 3px 3px}
+    .em-headline{font-family:var(--mono);font-size:.58rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:.55rem}
+    .em-total{font-family:var(--hero);font-size:3.2rem;line-height:.95;color:var(--text);font-variant-numeric:tabular-nums;letter-spacing:-.005em;display:flex;align-items:baseline;gap:.35rem}
+    .em-total .em-unit{font-family:var(--mono);font-size:.7rem;color:var(--muted);letter-spacing:.06em;font-weight:400;text-transform:uppercase}
+    .em-sub{font-family:var(--mono);font-size:.6rem;color:var(--muted);letter-spacing:.06em;margin-top:.45rem}
+    .em-sub strong{color:var(--text);font-weight:500}
+
+    /* mode breakdown bars */
+    .em-modes{margin-top:1.1rem;padding-top:1.1rem;border-top:1px solid var(--border)}
+    .em-mode{margin-bottom:.85rem}
+    .em-mode:last-child{margin-bottom:0}
+    .em-mode-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.35rem}
+    .em-mode-name{font-family:var(--body);font-size:.78rem;font-weight:500;display:flex;align-items:center;gap:.45rem}
+    .em-mode-name .em-swatch{display:inline-block;width:8px;height:8px;border-radius:2px}
+    .em-mode-name .em-swatch.bus{background:var(--amber)}
+    .em-mode-name .em-swatch.flight{background:#6aabff}
+    .em-mode-val{font-family:var(--hero);font-size:1.1rem;color:var(--text);font-variant-numeric:tabular-nums;letter-spacing:-.005em}
+    .em-mode-val .u{font-family:var(--mono);font-size:.55rem;color:var(--muted);letter-spacing:.06em;margin-left:.2rem;font-weight:400;text-transform:uppercase}
+    .em-mode-bar{height:6px;background:var(--border);border-radius:3px;overflow:hidden}
+    .em-mode-bar-fill{height:100%;border-radius:3px;transition:width .5s ease}
+    .em-mode-bar-fill.bus{background:var(--amber)}
+    .em-mode-bar-fill.flight{background:#6aabff}
+    .em-mode-detail{font-family:var(--mono);font-size:.52rem;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;margin-top:.28rem}
+
+    /* fixtures list */
+    .fixtures-panel{background:var(--surface);border:1px solid var(--border);border-radius:3px;margin-top:1rem;overflow:hidden}
+    .panel-head{padding:.85rem 1.1rem;border-bottom:1px solid var(--border);background:#fafbfd;font-family:var(--mono);font-size:.6rem;letter-spacing:.16em;text-transform:uppercase;color:var(--text)}
+    .fixture-row{padding:.7rem 1.1rem;border-bottom:1px solid var(--border);display:grid;grid-template-columns:auto 1fr auto;gap:.85rem;align-items:center}
+    .fixture-row:last-child{border-bottom:none}
+    .fixture-row.upcoming{background:rgba(224,123,0,.05)}
+    .fixture-stage{font-family:var(--mono);font-size:.5rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:.2rem .4rem;background:var(--bg);border-radius:2px}
+    .fixture-row.upcoming .fixture-stage{background:rgba(224,123,0,.15);color:var(--amber)}
+    .fixture-body{font-size:.75rem;line-height:1.4}
+    .fixture-body strong{font-weight:500}
+    .fixture-body span{display:block;font-family:var(--mono);font-size:.55rem;color:var(--muted);letter-spacing:.04em;margin-top:.15rem}
+    .fixture-mode{font-family:var(--mono);font-size:.5rem;letter-spacing:.08em;text-transform:uppercase;padding:.22rem .45rem;border-radius:2px}
+    .fixture-mode.bus{background:rgba(224,123,0,.13);color:var(--amber)}
+    .fixture-mode.charter{background:rgba(26,111,219,.13);color:var(--blue)}
+
+    /* equivalences */
+    .equiv-panel{background:var(--surface);border:1px solid var(--border);border-radius:3px;margin-top:1rem;padding:1rem 1.2rem}
+    .equiv-head{font-family:var(--mono);font-size:.58rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:.7rem}
+    .equiv-row{display:flex;align-items:baseline;gap:.6rem;padding:.35rem 0;border-bottom:1px dashed var(--border);font-size:.76rem}
+    .equiv-row:last-child{border-bottom:none}
+    .equiv-num{font-family:var(--hero);color:var(--red);font-size:1.05rem;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-.005em;min-width:3.5rem;text-align:right}
+    .equiv-txt{flex:1;color:var(--muted);line-height:1.4}
+    .equiv-txt strong{color:var(--text);font-weight:500}
+
+    /* caveat */
+    .caveat{background:var(--amber-lt);border:1px solid #f3d99c;border-radius:3px;padding:.9rem 1rem;margin-top:1rem}
+    .caveat-head{font-family:var(--mono);font-size:.56rem;letter-spacing:.14em;text-transform:uppercase;color:var(--amber);margin-bottom:.4rem;display:flex;align-items:center;gap:.4rem}
+    .caveat-head::before{content:'⚠';font-size:.8rem}
+    .caveat p{font-size:.72rem;line-height:1.6;color:#7a4a00}
+    .caveat p strong{color:#5c3800}
+
+    /* Cohort context row below the map */
+    .cohort-row{margin-top:1.5rem;display:grid;grid-template-columns:1fr 1fr;gap:1.5rem}
+    .cohort-card{background:var(--surface);border:1px solid var(--border);border-radius:3px;padding:1.4rem 1.5rem}
+    .cohort-card h3{font-family:var(--hero);font-size:1.5rem;text-transform:uppercase;line-height:1;letter-spacing:-.005em;margin-bottom:.65rem}
+    .cohort-card h3 em{font-style:normal;color:var(--green)}
+    .cohort-tag{font-family:var(--mono);font-size:.55rem;letter-spacing:.16em;text-transform:uppercase;color:var(--green);margin-bottom:.55rem}
+    .cohort-card p{font-size:.8rem;line-height:1.65;color:var(--muted);font-weight:300}
+    .cohort-card.dark{background:var(--dark);color:#fff;border-color:var(--dark);position:relative;overflow:hidden}
+    .cohort-card.dark .cohort-tag{color:var(--amber)}
+    .cohort-card.dark p{color:rgba(255,255,255,.55)}
+    .cohort-stat{margin-top:.8rem;padding:.7rem;background:var(--bg);border-left:2px solid var(--green);display:inline-block}
+    .cohort-card.dark .cohort-stat{background:rgba(0,0,0,.35);border-left-color:var(--amber)}
+    .cohort-stat-val{font-family:var(--hero);font-size:1.6rem;color:var(--text);line-height:1;letter-spacing:-.005em}
+    .cohort-card.dark .cohort-stat-val{color:var(--amber)}
+    .cohort-stat-lbl{font-family:var(--mono);font-size:.5rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-top:.2rem}
+    .cohort-card.dark .cohort-stat-lbl{color:rgba(255,255,255,.4)}
+
+    /* FOOTER */
+    footer{background:var(--dark);padding:3.5rem 3rem;display:grid;grid-template-columns:1fr auto;gap:2.5rem;align-items:start;border-top:1px solid rgba(255,255,255,.05);margin-top:1.5rem}
+    .footer-brand{font-family:var(--mono);font-size:.75rem;color:var(--green);letter-spacing:.12em;text-transform:uppercase;margin-bottom:.6rem}
+    .footer-tagline{font-size:.82rem;color:rgba(255,255,255,.23);font-weight:300;max-width:380px;line-height:1.65}
+    .footer-links{display:flex;flex-direction:column;gap:.6rem;text-align:right}
+    .footer-links a{font-family:var(--mono);font-size:.62rem;color:rgba(255,255,255,.28);text-decoration:none;letter-spacing:.1em;transition:color .18s}
+    .footer-links a:hover{color:var(--green)}
+    .footer-bottom{grid-column:1/-1;padding-top:2rem;border-top:1px solid rgba(255,255,255,.05);display:flex;justify-content:space-between;flex-wrap:wrap;gap:1rem}
+    .footer-bottom p{font-family:var(--mono);font-size:.57rem;color:rgba(255,255,255,.18);letter-spacing:.08em}
+
+    /* RESPONSIVE */
+    @media(max-width:1100px){
+      .main{grid-template-columns:1fr}
+      .right-col{position:static}
+      .map-wrap{height:460px}
+      .cohort-row{grid-template-columns:1fr}
+    }
+    @media(max-width:720px){
+      nav{padding:1rem 1.5rem}.nav-links{display:none}
+      .page-header{padding:5rem 1.5rem 1.5rem}
+      .header-meta{display:none}
+      .header-year{font-size:5rem;right:1.5rem}
+      .picker-strip{padding:1rem 1.5rem}
+      .picker-stats{gap:1rem}
+      .main{padding:1rem 1.5rem 2rem}
+      .map-wrap{height:340px}
+      .stadium-label{display:none}
+      footer{padding:2rem 1.5rem;grid-template-columns:1fr}
+      .footer-links{text-align:left}
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="home.html" class="nav-logo">A Study on the FIFA World Cup 2026</a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="museum.html">Museum</a></li>
+    <li><a href="climate-map.html">Climate Map</a></li>
+    <li><a href="climate-data.html">Climate Data</a></li>
+    <li><a href="recommendations.html">Recommendations</a></li>
+    <li><a href="live-tracker.html">Live Tracker</a></li>
+    <li><a href="team-tracker.html" class="active">Team Tracker</a></li>
+    <li><a href="sources.html">Sources</a></li>
+    <li><a href="about.html">About</a></li>
+  </ul>
+</nav>
+
+<!-- HEADER -->
+<section class="page-header">
+  <div class="ph-bg"></div>
+  <div class="ph-overlay"></div>
+  <div class="ph-grid"></div>
+  <div class="header-meta">
+    Future of the Project<br/>
+    Lab · v1.0 · Team Tracker<br/>
+    Data as of: <span id="dataAsOf">—</span>
+  </div>
+  <div class="header-year">26</div>
+
+  <div class="htag">
+    <span class="lab-badge">Lab · v1.0</span>
+    Team Travel &amp; Emissions
+  </div>
+  <h1>Forty-eight <em>Nations.</em><br/>One <span class="outline">Continent.</span></h1>
+  <p>Pick a team. See where they train, every match they've played or will play, the ground and air routes between them — and the CO₂e their travel has produced. All 48 base camps sourced from FIFA's official Team Base Camp assignments.</p>
+</section>
+
+<!-- TEAM PICKER STRIP -->
+<section class="picker-strip">
+  <span class="picker-label">Pick a team</span>
+  <div class="picker-select-wrap">
+    <select class="team-select" id="teamSelect" aria-label="Select team">
+      <option value="">— Choose a team —</option>
+    </select>
+  </div>
+  <div class="picker-filter">
+    <button class="fbtn on" data-filter="all">All 48</button>
+    <button class="fbtn" data-filter="active">Still in</button>
+    <button class="fbtn" data-filter="eliminated">Gone home</button>
+  </div>
+  <div class="picker-stats">
+    <div>Total km travelled<strong id="statKm">—</strong></div>
+    <div>Team CO₂e<strong id="statCo2">—</strong></div>
+  </div>
+</section>
+
+<!-- MAIN -->
+<section class="main">
+
+  <!-- LEFT: MAP -->
+  <div class="left-col">
+    <div class="map-head">
+      <div class="map-title">
+        <span class="live-dot"></span>
+        <span id="mapTitleTxt">Continental travel map</span>
+        <em id="mapSubtitle">— select a team above to render its routes</em>
+      </div>
+      <div class="map-legend-inline">
+        <span class="lg-item"><span class="lg-swatch base"></span>Team base</span>
+        <span class="lg-item"><span class="lg-swatch stadium"></span>Match venue</span>
+        <span class="lg-item"><span class="lg-line bus"></span>Bus route</span>
+        <span class="lg-item"><span class="lg-line flight"></span>Charter flight</span>
+      </div>
+    </div>
+
+    <div class="map-wrap" id="mapWrap">
+      <svg class="map-svg" id="mapSvg" viewBox="0 0 1000 620" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="map-loading" id="mapLoading">Loading geography…</div>
+      <div class="map-tip" id="mapTip"></div>
+    </div>
+
+    <div class="map-caption">
+      <span><strong>Distances:</strong> great-circle for charter flights · road-network estimate (great-circle × 1.25) for bus routes.</span>
+      <span>Emission factors: <strong>118 gCO₂e/pax-km</strong> charter · <strong>75 gCO₂e/pax-km</strong> coach · travel party <strong>60 people</strong></span>
+    </div>
+
+    <!-- Cohort context row -->
+    <div class="cohort-row">
+      <div class="cohort-card dark">
+        <div class="cohort-tag">Why this matters</div>
+        <h3>A single team's <em style="color:var(--amber);font-style:normal">footprint</em> is small.<br/>Forty-eight teams' <em style="color:var(--amber);font-style:normal">isn't.</em></h3>
+        <p>FIFA reports an average team travel distance of <strong style="color:#fff">5,146 miles (8,281 km)</strong> for 2026 — up from Russia 2018 (5,441 mi) but well below Brazil 2014 (7,054 mi). Across 48 teams, that's roughly 400,000 km of team-only movement, before any fan travel is counted.</p>
+        <div class="cohort-stat">
+          <div class="cohort-stat-val" id="cohortAvgKm">—</div>
+          <div class="cohort-stat-lbl">Cohort-average km per team (this dataset)</div>
+        </div>
+      </div>
+      <div class="cohort-card">
+        <div class="cohort-tag">What varies most</div>
+        <h3>Not the distance. <em>The mode.</em></h3>
+        <p>A charter flight from Kansas City to Los Angeles emits ~7× more CO₂e per passenger than the same distance by coach bus. Teams based near their fixture cluster (Brazil in New Jersey, Belgium in Seattle) get to bus most of their games; teams criss-crossing between coasts don't have that option.</p>
+        <div class="cohort-stat">
+          <div class="cohort-stat-val" id="cohortFlightShare">—</div>
+          <div class="cohort-stat-lbl">Share of team-km by charter flight</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: TEAM SIDEBAR -->
+  <div class="right-col">
+
+    <div class="team-hero" id="teamHero">
+      <div class="team-hero-flag">🌍</div>
+      <div class="team-hero-name">Pick a team</div>
+      <div class="team-hero-meta">
+        <span>Confederation<strong>—</strong></span>
+        <span>Group<strong>—</strong></span>
+      </div>
+      <div class="status-chip eliminated">No team selected</div>
+    </div>
+
+    <div class="emissions-panel" id="emissionsPanel">
+      <div class="em-headline">Cumulative travel emissions</div>
+      <div class="em-total"><span id="emTotal">—</span><span class="em-unit">t CO₂e</span></div>
+      <div class="em-sub" id="emSub">Select a team to see numbers</div>
+
+      <div class="em-modes" id="emModes"></div>
+    </div>
+
+    <div class="fixtures-panel">
+      <div class="panel-head">Fixture log</div>
+      <div id="fixturesList">
+        <div class="fixture-row"><div class="fixture-stage">—</div><div class="fixture-body" style="color:var(--muted)">Select a team to see fixtures.</div><div></div></div>
+      </div>
+    </div>
+
+    <div class="equiv-panel" id="equivPanel" style="display:none">
+      <div class="equiv-head">What that footprint looks like</div>
+      <div id="equivList"></div>
+    </div>
+
+    <div class="caveat">
+      <div class="caveat-head">Data verification</div>
+      <p><strong>Verified from ESPN bracket (Jul 6, 2026):</strong> team status, all Round-of-32 and Round-of-16 results, upcoming quarterfinal fixtures — opponent, venue, score. <strong>Not individually verified:</strong> group-stage venue assignments (encoded from group regional clusters). Distances use great-circle math; bus routes add a 25% road-detour factor; a &lt;500 km threshold auto-flips bus→charter. Update <code>teams-data.json</code> to reflect current tournament state.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div>
+    <div class="footer-brand">WC Climate // 2026</div>
+    <div class="footer-tagline">A sustainability report on the intersection of football, climate change, and environmental impact across 92 years of FIFA World Cups.</div>
+  </div>
+  <div class="footer-links">
+    <a href="home.html">Home</a>
+    <a href="museum.html">Museum</a>
+    <a href="climate-map.html">Climate Map</a>
+    <a href="overview.html">Climate Data</a>
+    <a href="recommendations.html">Recommendations</a>
+    <a href="live-tracker.html">Live Tracker</a>
+    <a href="team-tracker.html">Team Tracker</a>
+    <a href="sources.html">Sources</a>
+  </div>
+  <div class="footer-bottom">
+    <p>Base camps: FIFA / U.S. Soccer (Jun 2026) · Emission factors: DEFRA 2020, carbonlabel.org · Distances: great-circle</p>
+    <p>Capstone · NYU CGA · De Jesus &amp; Rajasekar · 2026</p>
+  </div>
+</footer>
+
+<script id="embedded-team-data">
+/* ════════════════════════════════════════════════════════════════════════
+   EMBEDDED TEAM DATA
+   ────────────────────────────────────────────────────────────────────────
+   The full contents of teams-data.json inlined so this page works when
+   opened directly via file:// (double-click). Update this block AND the
+   companion teams-data.json when you edit the tournament state.
+   When hosted on a real URL the app also tries a live fetch of
+   teams-data.json as a fallback; the embedded copy always wins.
+   ════════════════════════════════════════════════════════════════════════ */
+const TEAMS_DATA = {
+  "_meta": {
+    "version": "1.0",
+    "lastUpdated": "2026-07-06",
+    "notes": "Team status and knockout fixtures VERIFIED from ESPN bracket (espn.com/soccer/bracket) on Jul 6, 2026. Group-stage venue assignments in the fixtures array are placeholders based on group regional clusters and have NOT been individually verified — flagged per team with `verified` field. Update this JSON to reflect current tournament state.",
+    "sources": {
+      "baseCamps": "https://www.ussoccer.com/stories/2026/06/usmnt/where-are-fifa-world-cup-2026-team-base-camp-training-sites",
+      "emissionFactors": {
+        "charterFlight_gPerPaxKm": 118,
+        "coachBus_gPerPaxKm": 75,
+        "note": "Charter flight factor from carbonlabel.org (includes 1.7× non-CO2 radiative forcing multiplier). Bus factor mid-range from UK DEFRA 2020 conversion factors."
+      },
+      "travelPartySize": 60
+    },
+    "stadiums": {
+      "atl": {
+        "name": "Mercedes-Benz Stadium",
+        "city": "Atlanta",
+        "lat": 33.755,
+        "lon": -84.4
+      },
+      "bos": {
+        "name": "Gillette Stadium",
+        "city": "Foxborough / Boston",
+        "lat": 42.091,
+        "lon": -71.264
+      },
+      "dal": {
+        "name": "AT&T Stadium",
+        "city": "Arlington / Dallas",
+        "lat": 32.747,
+        "lon": -97.093
+      },
+      "hou": {
+        "name": "NRG Stadium",
+        "city": "Houston",
+        "lat": 29.685,
+        "lon": -95.41
+      },
+      "kan": {
+        "name": "Arrowhead Stadium",
+        "city": "Kansas City",
+        "lat": 39.049,
+        "lon": -94.484
+      },
+      "lax": {
+        "name": "SoFi Stadium",
+        "city": "Los Angeles / Inglewood",
+        "lat": 33.953,
+        "lon": -118.339
+      },
+      "mia": {
+        "name": "Hard Rock Stadium",
+        "city": "Miami Gardens",
+        "lat": 25.958,
+        "lon": -80.239
+      },
+      "nyc": {
+        "name": "MetLife Stadium",
+        "city": "New York / New Jersey",
+        "lat": 40.814,
+        "lon": -74.074
+      },
+      "phi": {
+        "name": "Lincoln Financial Field",
+        "city": "Philadelphia",
+        "lat": 39.901,
+        "lon": -75.168
+      },
+      "sfo": {
+        "name": "Levi's Stadium",
+        "city": "SF Bay / Santa Clara",
+        "lat": 37.403,
+        "lon": -121.97
+      },
+      "sea": {
+        "name": "Lumen Field",
+        "city": "Seattle",
+        "lat": 47.595,
+        "lon": -122.332
+      },
+      "tor": {
+        "name": "BMO Field",
+        "city": "Toronto",
+        "lat": 43.633,
+        "lon": -79.418
+      },
+      "van": {
+        "name": "BC Place",
+        "city": "Vancouver",
+        "lat": 49.276,
+        "lon": -123.112
+      },
+      "mex": {
+        "name": "Estadio Azteca",
+        "city": "Mexico City",
+        "lat": 19.303,
+        "lon": -99.15
+      },
+      "gua": {
+        "name": "Estadio Akron",
+        "city": "Guadalajara / Zapopan",
+        "lat": 20.68,
+        "lon": -103.46
+      },
+      "mty": {
+        "name": "Estadio BBVA",
+        "city": "Monterrey",
+        "lat": 25.669,
+        "lon": -100.244
+      }
+    }
+  },
+  "teams": [
+    {
+      "code": "USA",
+      "name": "United States",
+      "flag": "🇺🇸",
+      "group": "D",
+      "status": "r16",
+      "confederation": "CONCACAF",
+      "base": {
+        "name": "Great Park Sports Complex",
+        "city": "Irvine, CA",
+        "lat": 33.665,
+        "lon": -117.822
+      },
+      "fixtures": [
+        {
+          "stadium": "lax",
+          "stage": "Group",
+          "date": "Jun 12",
+          "played": true,
+          "mode": "bus"
+        },
+        {
+          "stadium": "sea",
+          "stage": "Group",
+          "date": "Jun 18",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "lax",
+          "stage": "Group",
+          "date": "Jun 24",
+          "played": true,
+          "mode": "bus"
+        },
+        {
+          "stadium": "sfo",
+          "stage": "R32",
+          "date": "Jul 1",
+          "played": true,
+          "mode": "charter",
+          "opponent": "Bosnia",
+          "result": "2-0 W"
+        },
+        {
+          "stadium": "sea",
+          "stage": "R16",
+          "date": "Jul 6",
+          "played": false,
+          "mode": "charter",
+          "opponent": "Belgium",
+          "result": "upcoming"
+        }
+      ],
+      "verified": "knockout-verified"
+    },
+    {
+      "code": "ARG",
+      "name": "Argentina",
+      "flag": "🇦🇷",
+      "group": "J",
+      "status": "r16",
+      "confederation": "CONMEBOL",
+      "base": {
+        "name": "Sporting KC Training Center",
+        "city": "Kansas City, KS",
+        "lat": 39.121,
+        "lon": -94.826
+      },
+      "fixtures": [
+        {
+          "stadium": "kan",
+          "stage": "Group",
+          "date": "Jun 16",
+          "played": true,
+          "mode": "bus"
+        },
+        {
+          "stadium": "hou",
+          "stage": "Group",
+          "date": "Jun 22",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "dal",
+          "stage": "Group",
+          "date": "Jun 26",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "mia",
+          "stage": "R32",
+          "date": "Jul 3",
+          "played": true,
+          "mode": "charter",
+          "opponent": "Cape Verde",
+          "result": "3-2 W (AET)"
+        },
+        {
+          "stadium": "atl",
+          "stage": "R16",
+          "date": "Jul 7",
+          "played": false,
+          "mode": "charter",
+          "opponent": "Egypt",
+          "result": "upcoming"
+        }
+      ],
+      "verified": "knockout-verified"
+    },
+    {
+      "code": "BRA",
+      "name": "Brazil",
+      "flag": "🇧🇷",
+      "group": "E",
+      "status": "eliminated",
+      "confederation": "CONMEBOL",
+      "base": {
+        "name": "Columbia Park Training Facility",
+        "city": "Morristown, NJ",
+        "lat": 40.796,
+        "lon": -74.481
+      },
+      "fixtures": [
+        {
+          "stadium": "nyc",
+          "stage": "Group",
+          "date": "Jun 13",
+          "played": true,
+          "mode": "bus"
+        },
+        {
+          "stadium": "phi",
+          "stage": "Group",
+          "date": "Jun 19",
+          "played": true,
+          "mode": "bus"
+        },
+        {
+          "stadium": "nyc",
+          "stage": "Group",
+          "date": "Jun 25",
+          "played": true,
+          "mode": "bus"
+        },
+        {
+          "stadium": "lax",
+          "stage": "R32",
+          "date": "Jun 29",
+          "played": true,
+          "mode": "charter",
+          "opponent": "Japan",
+          "result": "2-1 W"
+        },
+        {
+          "stadium": "nyc",
+          "stage": "R16",
+          "date": "Jul 5",
+          "played": true,
+          "mode": "charter",
+          "opponent": "Norway",
+          "result": "1-2 L"
+        }
+      ],
+      "verified": "knockout-verified"
+    },
+    {
+      "code": "MEX",
+      "name": "Mexico",
+      "flag": "🇲🇽",
+      "group": "A",
+      "status": "eliminated",
+      "confederation": "CONCACAF",
+      "base": {
+        "name": "Centro de Alto Rendimiento (CAR)",
+        "city": "Mexico City",
+        "lat": 19.303,
+        "lon": -99.198
+      },
+      "fixtures": [
+        {
+          "stadium": "mex",
+          "stage": "Group",
+          "date": "Jun 11",
+          "played": true,
+          "mode": "bus"
+        },
+        {
+          "stadium": "gua",
+          "stage": "Group",
+          "date": "Jun 18",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "mty",
+          "stage": "Group",
+          "date": "Jun 24",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "mex",
+          "stage": "R32",
+          "date": "Jul 1",
+          "played": true,
+          "mode": "charter",
+          "opponent": "Ecuador",
+          "result": "2-0 W"
+        },
+        {
+          "stadium": "mex",
+          "stage": "R16",
+          "date": "Jul 6",
+          "played": true,
+          "mode": "charter",
+          "opponent": "England",
+          "result": "2-3 L"
+        }
+      ],
+      "verified": "knockout-verified"
+    },
+    {
+      "code": "CAN",
+      "name": "Canada",
+      "flag": "🇨🇦",
+      "group": "B",
+      "status": "eliminated",
+      "confederation": "CONCACAF",
+      "base": {
+        "name": "National Soccer Development Centre",
+        "city": "Vancouver, BC",
+        "lat": 49.246,
+        "lon": -123.187
+      },
+      "fixtures": [
+        {
+          "stadium": "tor",
+          "stage": "Group",
+          "date": "Jun 12",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "van",
+          "stage": "Group",
+          "date": "Jun 18",
+          "played": true,
+          "mode": "bus"
+        },
+        {
+          "stadium": "tor",
+          "stage": "Group",
+          "date": "Jun 24",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "lax",
+          "stage": "R32",
+          "date": "Jun 28",
+          "played": true,
+          "mode": "charter",
+          "opponent": "South Africa",
+          "result": "1-0 W"
+        },
+        {
+          "stadium": "hou",
+          "stage": "R16",
+          "date": "Jul 4",
+          "played": true,
+          "mode": "charter",
+          "opponent": "Morocco",
+          "result": "0-3 L"
+        }
+      ],
+      "verified": "knockout-verified"
+    },
+    {
+      "code": "FRA",
+      "name": "France",
+      "flag": "🇫🇷",
+      "group": "F",
+      "status": "qf",
+      "confederation": "UEFA",
+      "base": {
+        "name": "Bentley University",
+        "city": "Waltham, MA",
+        "lat": 42.386,
+        "lon": -71.22
+      },
+      "fixtures": [
+        {
+          "stadium": "bos",
+          "stage": "Group",
+          "date": "Jun 14",
+          "played": true,
+          "mode": "bus"
+        },
+        {
+          "stadium": "phi",
+          "stage": "Group",
+          "date": "Jun 20",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "nyc",
+          "stage": "Group",
+          "date": "Jun 25",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "nyc",
+          "stage": "R32",
+          "date": "Jun 30",
+          "played": true,
+          "mode": "charter",
+          "opponent": "Sweden",
+          "result": "3-0 W"
+        },
+        {
+          "stadium": "phi",
+          "stage": "R16",
+          "date": "Jul 4",
+          "played": true,
+          "mode": "charter",
+          "opponent": "Paraguay",
+          "result": "1-0 W"
+        },
+        {
+          "stadium": "bos",
+          "stage": "QF",
+          "date": "Jul 9",
+          "played": false,
+          "mode": "charter",
+          "opponent": "Morocco",
+          "result": "upcoming"
+        }
+      ],
+      "verified": "knockout-verified"
+    },
+    {
+      "code": "ENG",
+      "name": "England",
+      "flag": "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
+      "group": "G",
+      "status": "qf",
+      "confederation": "UEFA",
+      "base": {
+        "name": "Swope Soccer Village",
+        "city": "Kansas City, MO",
+        "lat": 39.017,
+        "lon": -94.537
+      },
+      "fixtures": [
+        {
+          "stadium": "kan",
+          "stage": "Group",
+          "date": "Jun 15",
+          "played": true,
+          "mode": "bus"
+        },
+        {
+          "stadium": "dal",
+          "stage": "Group",
+          "date": "Jun 21",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "atl",
+          "stage": "Group",
+          "date": "Jun 27",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "atl",
+          "stage": "R32",
+          "date": "Jul 1",
+          "played": true,
+          "mode": "charter",
+          "opponent": "Congo DR",
+          "result": "2-1 W"
+        },
+        {
+          "stadium": "mex",
+          "stage": "R16",
+          "date": "Jul 6",
+          "played": true,
+          "mode": "charter",
+          "opponent": "Mexico",
+          "result": "3-2 W"
+        },
+        {
+          "stadium": "mia",
+          "stage": "QF",
+          "date": "Jul 11",
+          "played": false,
+          "mode": "charter",
+          "opponent": "Norway",
+          "result": "upcoming"
+        }
+      ],
+      "verified": "knockout-verified"
+    },
+    {
+      "code": "GER",
+      "name": "Germany",
+      "flag": "🇩🇪",
+      "group": "H",
+      "status": "eliminated",
+      "confederation": "UEFA",
+      "base": {
+        "name": "Wake Forest University",
+        "city": "Winston-Salem, NC",
+        "lat": 36.132,
+        "lon": -80.276
+      },
+      "fixtures": [
+        {
+          "stadium": "atl",
+          "stage": "Group",
+          "date": "Jun 15",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "mia",
+          "stage": "Group",
+          "date": "Jun 21",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "phi",
+          "stage": "Group",
+          "date": "Jun 27",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "bos",
+          "stage": "R32",
+          "date": "Jun 30",
+          "played": true,
+          "mode": "charter",
+          "opponent": "Paraguay",
+          "result": "1-1 L (pens 3-4)"
+        }
+      ],
+      "verified": "knockout-verified"
+    },
+    {
+      "code": "ESP",
+      "name": "Spain",
+      "flag": "🇪🇸",
+      "group": "C",
+      "status": "r16",
+      "confederation": "UEFA",
+      "base": {
+        "name": "Baylor School",
+        "city": "Chattanooga, TN",
+        "lat": 35.081,
+        "lon": -85.322
+      },
+      "fixtures": [
+        {
+          "stadium": "atl",
+          "stage": "Group",
+          "date": "Jun 13",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "nyc",
+          "stage": "Group",
+          "date": "Jun 19",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "mia",
+          "stage": "Group",
+          "date": "Jun 25",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "lax",
+          "stage": "R32",
+          "date": "Jul 2",
+          "played": true,
+          "mode": "charter",
+          "opponent": "Austria",
+          "result": "3-0 W"
+        },
+        {
+          "stadium": "dal",
+          "stage": "R16",
+          "date": "Jul 6",
+          "played": false,
+          "mode": "charter",
+          "opponent": "Portugal",
+          "result": "upcoming"
+        }
+      ],
+      "verified": "knockout-verified"
+    },
+    {
+      "code": "POR",
+      "name": "Portugal",
+      "flag": "🇵🇹",
+      "group": "I",
+      "status": "r16",
+      "confederation": "UEFA",
+      "base": {
+        "name": "Gardens North County District Park",
+        "city": "Palm Beach Gardens, FL",
+        "lat": 26.865,
+        "lon": -80.185
+      },
+      "fixtures": [
+        {
+          "stadium": "mia",
+          "stage": "Group",
+          "date": "Jun 16",
+          "played": true,
+          "mode": "bus"
+        },
+        {
+          "stadium": "nyc",
+          "stage": "Group",
+          "date": "Jun 22",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "atl",
+          "stage": "Group",
+          "date": "Jun 26",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "tor",
+          "stage": "R32",
+          "date": "Jul 1",
+          "played": true,
+          "mode": "charter",
+          "opponent": "Croatia",
+          "result": "2-1 W"
+        },
+        {
+          "stadium": "dal",
+          "stage": "R16",
+          "date": "Jul 6",
+          "played": false,
+          "mode": "charter",
+          "opponent": "Spain",
+          "result": "upcoming"
+        }
+      ],
+      "verified": "knockout-verified"
+    },
+    {
+      "code": "NED",
+      "name": "Netherlands",
+      "flag": "🇳🇱",
+      "group": "K",
+      "status": "eliminated",
+      "confederation": "UEFA",
+      "base": {
+        "name": "KC Current Training Facility",
+        "city": "Riverside, MO",
+        "lat": 39.174,
+        "lon": -94.615
+      },
+      "fixtures": [
+        {
+          "stadium": "kan",
+          "stage": "Group",
+          "date": "Jun 17",
+          "played": true,
+          "mode": "bus"
+        },
+        {
+          "stadium": "sea",
+          "stage": "Group",
+          "date": "Jun 23",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "sfo",
+          "stage": "Group",
+          "date": "Jun 27",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "gua",
+          "stage": "R32",
+          "date": "Jun 30",
+          "played": true,
+          "mode": "charter",
+          "opponent": "Morocco",
+          "result": "1-1 L (pens 2-3)"
+        }
+      ],
+      "verified": "knockout-verified"
+    },
+    {
+      "code": "BEL",
+      "name": "Belgium",
+      "flag": "🇧🇪",
+      "group": "L",
+      "status": "r16",
+      "confederation": "UEFA",
+      "base": {
+        "name": "Seattle Sounders Performance Centre",
+        "city": "Renton, WA",
+        "lat": 47.463,
+        "lon": -122.215
+      },
+      "fixtures": [
+        {
+          "stadium": "sea",
+          "stage": "Group",
+          "date": "Jun 17",
+          "played": true,
+          "mode": "bus"
+        },
+        {
+          "stadium": "van",
+          "stage": "Group",
+          "date": "Jun 23",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "sfo",
+          "stage": "Group",
+          "date": "Jun 27",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "sea",
+          "stage": "R32",
+          "date": "Jul 1",
+          "played": true,
+          "mode": "charter",
+          "opponent": "Senegal",
+          "result": "3-2 W (AET)"
+        },
+        {
+          "stadium": "sea",
+          "stage": "R16",
+          "date": "Jul 6",
+          "played": false,
+          "mode": "charter",
+          "opponent": "USA",
+          "result": "upcoming"
+        }
+      ],
+      "verified": "knockout-verified"
+    },
+    {
+      "code": "CRO",
+      "name": "Croatia",
+      "flag": "🇭🇷",
+      "group": "E",
+      "status": "eliminated",
+      "confederation": "UEFA",
+      "base": {
+        "name": "Episcopal High School",
+        "city": "Alexandria, VA",
+        "lat": 38.821,
+        "lon": -77.114
+      },
+      "fixtures": [
+        {
+          "stadium": "phi",
+          "stage": "Group",
+          "date": "Jun 13",
+          "played": true,
+          "mode": "bus"
+        },
+        {
+          "stadium": "nyc",
+          "stage": "Group",
+          "date": "Jun 19",
+          "played": true,
+          "mode": "bus"
+        },
+        {
+          "stadium": "atl",
+          "stage": "Group",
+          "date": "Jun 25",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "tor",
+          "stage": "R32",
+          "date": "Jul 1",
+          "played": true,
+          "mode": "charter",
+          "opponent": "Portugal",
+          "result": "1-2 L"
+        }
+      ],
+      "verified": "knockout-verified"
+    },
+    {
+      "code": "URU",
+      "name": "Uruguay",
+      "flag": "🇺🇾",
+      "group": "H",
+      "status": "eliminated",
+      "confederation": "CONMEBOL",
+      "base": {
+        "name": "Mayakoba Training Center",
+        "city": "Playa del Carmen, Mexico",
+        "lat": 20.688,
+        "lon": -87.083
+      },
+      "fixtures": [
+        {
+          "stadium": "mia",
+          "stage": "Group",
+          "date": "Jun 15",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "atl",
+          "stage": "Group",
+          "date": "Jun 21",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "phi",
+          "stage": "Group",
+          "date": "Jun 27",
+          "played": true,
+          "mode": "charter"
+        }
+      ],
+      "verified": "group-only"
+    },
+    {
+      "code": "COL",
+      "name": "Colombia",
+      "flag": "🇨🇴",
+      "group": "A",
+      "status": "r16",
+      "confederation": "CONMEBOL",
+      "base": {
+        "name": "Academia Atlas FC",
+        "city": "Zapopan, Mexico",
+        "lat": 20.72,
+        "lon": -103.416
+      },
+      "fixtures": [
+        {
+          "stadium": "gua",
+          "stage": "Group",
+          "date": "Jun 12",
+          "played": true,
+          "mode": "bus"
+        },
+        {
+          "stadium": "mex",
+          "stage": "Group",
+          "date": "Jun 18",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "mty",
+          "stage": "Group",
+          "date": "Jun 24",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "sfo",
+          "stage": "R32",
+          "date": "Jul 2",
+          "played": true,
+          "mode": "charter",
+          "opponent": "Ghana",
+          "result": "1-0 W"
+        },
+        {
+          "stadium": "van",
+          "stage": "R16",
+          "date": "Jul 7",
+          "played": false,
+          "mode": "charter",
+          "opponent": "Switzerland",
+          "result": "upcoming"
+        }
+      ],
+      "verified": "knockout-verified"
+    },
+    {
+      "code": "ECU",
+      "name": "Ecuador",
+      "flag": "🇪🇨",
+      "group": "D",
+      "status": "eliminated",
+      "confederation": "CONMEBOL",
+      "base": {
+        "name": "Columbus Crew Performance Center",
+        "city": "Columbus, OH",
+        "lat": 39.968,
+        "lon": -83.014
+      },
+      "fixtures": [
+        {
+          "stadium": "lax",
+          "stage": "Group",
+          "date": "Jun 12",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "sea",
+          "stage": "Group",
+          "date": "Jun 18",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "lax",
+          "stage": "Group",
+          "date": "Jun 24",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "mex",
+          "stage": "R32",
+          "date": "Jul 1",
+          "played": true,
+          "mode": "charter",
+          "opponent": "Mexico",
+          "result": "0-2 L"
+        }
+      ],
+      "verified": "knockout-verified"
+    },
+    {
+      "code": "PAR",
+      "name": "Paraguay",
+      "flag": "🇵🇾",
+      "group": "K",
+      "status": "eliminated",
+      "confederation": "CONMEBOL",
+      "base": {
+        "name": "Spartan Soccer Complex",
+        "city": "San Jose, CA",
+        "lat": 37.335,
+        "lon": -121.881
+      },
+      "fixtures": [
+        {
+          "stadium": "sfo",
+          "stage": "Group",
+          "date": "Jun 17",
+          "played": true,
+          "mode": "bus"
+        },
+        {
+          "stadium": "sea",
+          "stage": "Group",
+          "date": "Jun 23",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "kan",
+          "stage": "Group",
+          "date": "Jun 27",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "bos",
+          "stage": "R32",
+          "date": "Jun 30",
+          "played": true,
+          "mode": "charter",
+          "opponent": "Germany",
+          "result": "1-1 W (pens 4-3)"
+        },
+        {
+          "stadium": "phi",
+          "stage": "R16",
+          "date": "Jul 4",
+          "played": true,
+          "mode": "charter",
+          "opponent": "France",
+          "result": "0-1 L"
+        }
+      ],
+      "verified": "knockout-verified"
+    },
+    {
+      "code": "JPN",
+      "name": "Japan",
+      "flag": "🇯🇵",
+      "group": "C",
+      "status": "eliminated",
+      "confederation": "AFC",
+      "base": {
+        "name": "Nashville SC Training Center",
+        "city": "Nashville, TN",
+        "lat": 36.163,
+        "lon": -86.781
+      },
+      "fixtures": [
+        {
+          "stadium": "atl",
+          "stage": "Group",
+          "date": "Jun 13",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "nyc",
+          "stage": "Group",
+          "date": "Jun 19",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "mia",
+          "stage": "Group",
+          "date": "Jun 25",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "lax",
+          "stage": "R32",
+          "date": "Jun 29",
+          "played": true,
+          "mode": "charter",
+          "opponent": "Brazil",
+          "result": "1-2 L"
+        }
+      ],
+      "verified": "knockout-verified"
+    },
+    {
+      "code": "KOR",
+      "name": "Korea Republic",
+      "flag": "🇰🇷",
+      "group": "F",
+      "status": "eliminated",
+      "confederation": "AFC",
+      "base": {
+        "name": "Chivas Verde Valle",
+        "city": "Zapopan, Mexico",
+        "lat": 20.72,
+        "lon": -103.416
+      },
+      "fixtures": [
+        {
+          "stadium": "bos",
+          "stage": "Group",
+          "date": "Jun 14",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "phi",
+          "stage": "Group",
+          "date": "Jun 20",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "nyc",
+          "stage": "Group",
+          "date": "Jun 25",
+          "played": true,
+          "mode": "charter"
+        }
+      ],
+      "verified": "group-only"
+    },
+    {
+      "code": "AUS",
+      "name": "Australia",
+      "flag": "🇦🇺",
+      "group": "L",
+      "status": "eliminated",
+      "confederation": "AFC",
+      "base": {
+        "name": "Oakland Roots Training Facility",
+        "city": "Alameda, CA",
+        "lat": 37.774,
+        "lon": -122.259
+      },
+      "fixtures": [
+        {
+          "stadium": "sea",
+          "stage": "Group",
+          "date": "Jun 17",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "van",
+          "stage": "Group",
+          "date": "Jun 23",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "sfo",
+          "stage": "Group",
+          "date": "Jun 27",
+          "played": true,
+          "mode": "bus"
+        },
+        {
+          "stadium": "dal",
+          "stage": "R32",
+          "date": "Jul 3",
+          "played": true,
+          "mode": "charter",
+          "opponent": "Egypt",
+          "result": "1-1 L (pens 2-4)"
+        }
+      ],
+      "verified": "knockout-verified"
+    },
+    {
+      "code": "IRN",
+      "name": "IR Iran",
+      "flag": "🇮🇷",
+      "group": "G",
+      "status": "eliminated",
+      "confederation": "AFC",
+      "base": {
+        "name": "Centro Xoloitzcuintle",
+        "city": "Tijuana, Mexico",
+        "lat": 32.516,
+        "lon": -117.038
+      },
+      "fixtures": [
+        {
+          "stadium": "kan",
+          "stage": "Group",
+          "date": "Jun 15",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "dal",
+          "stage": "Group",
+          "date": "Jun 21",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "atl",
+          "stage": "Group",
+          "date": "Jun 27",
+          "played": true,
+          "mode": "charter"
+        }
+      ],
+      "verified": "group-only"
+    },
+    {
+      "code": "SAU",
+      "name": "Saudi Arabia",
+      "flag": "🇸🇦",
+      "group": "I",
+      "status": "eliminated",
+      "confederation": "AFC",
+      "base": {
+        "name": "Austin FC Stadium",
+        "city": "Austin, TX",
+        "lat": 30.388,
+        "lon": -97.719
+      },
+      "fixtures": [
+        {
+          "stadium": "mia",
+          "stage": "Group",
+          "date": "Jun 16",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "nyc",
+          "stage": "Group",
+          "date": "Jun 22",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "atl",
+          "stage": "Group",
+          "date": "Jun 26",
+          "played": true,
+          "mode": "charter"
+        }
+      ],
+      "verified": "group-only"
+    },
+    {
+      "code": "JOR",
+      "name": "Jordan",
+      "flag": "🇯🇴",
+      "group": "B",
+      "status": "eliminated",
+      "confederation": "AFC",
+      "base": {
+        "name": "University of Portland",
+        "city": "Portland, OR",
+        "lat": 45.571,
+        "lon": -122.727
+      },
+      "fixtures": [
+        {
+          "stadium": "tor",
+          "stage": "Group",
+          "date": "Jun 12",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "van",
+          "stage": "Group",
+          "date": "Jun 18",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "tor",
+          "stage": "Group",
+          "date": "Jun 24",
+          "played": true,
+          "mode": "charter"
+        }
+      ],
+      "verified": "group-only"
+    },
+    {
+      "code": "UZB",
+      "name": "Uzbekistan",
+      "flag": "🇺🇿",
+      "group": "J",
+      "status": "eliminated",
+      "confederation": "AFC",
+      "base": {
+        "name": "Marietta Training Complex",
+        "city": "Marietta, GA",
+        "lat": 33.953,
+        "lon": -84.55
+      },
+      "fixtures": [
+        {
+          "stadium": "kan",
+          "stage": "Group",
+          "date": "Jun 16",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "hou",
+          "stage": "Group",
+          "date": "Jun 22",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "dal",
+          "stage": "Group",
+          "date": "Jun 26",
+          "played": true,
+          "mode": "charter"
+        }
+      ],
+      "verified": "group-only"
+    },
+    {
+      "code": "QAT",
+      "name": "Qatar",
+      "flag": "🇶🇦",
+      "group": "I",
+      "status": "eliminated",
+      "confederation": "AFC",
+      "base": {
+        "name": "Westmont College",
+        "city": "Santa Barbara, CA",
+        "lat": 34.446,
+        "lon": -119.663
+      },
+      "fixtures": [
+        {
+          "stadium": "mia",
+          "stage": "Group",
+          "date": "Jun 16",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "nyc",
+          "stage": "Group",
+          "date": "Jun 22",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "atl",
+          "stage": "Group",
+          "date": "Jun 26",
+          "played": true,
+          "mode": "charter"
+        }
+      ],
+      "verified": "group-only"
+    },
+    {
+      "code": "MAR",
+      "name": "Morocco",
+      "flag": "🇲🇦",
+      "group": "E",
+      "status": "qf",
+      "confederation": "CAF",
+      "base": {
+        "name": "The Pingry School",
+        "city": "Basking Ridge, NJ",
+        "lat": 40.696,
+        "lon": -74.535
+      },
+      "fixtures": [
+        {
+          "stadium": "nyc",
+          "stage": "Group",
+          "date": "Jun 13",
+          "played": true,
+          "mode": "bus"
+        },
+        {
+          "stadium": "phi",
+          "stage": "Group",
+          "date": "Jun 19",
+          "played": true,
+          "mode": "bus"
+        },
+        {
+          "stadium": "atl",
+          "stage": "Group",
+          "date": "Jun 25",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "gua",
+          "stage": "R32",
+          "date": "Jun 30",
+          "played": true,
+          "mode": "charter",
+          "opponent": "Netherlands",
+          "result": "1-1 W (pens 3-2)"
+        },
+        {
+          "stadium": "hou",
+          "stage": "R16",
+          "date": "Jul 4",
+          "played": true,
+          "mode": "charter",
+          "opponent": "Canada",
+          "result": "3-0 W"
+        },
+        {
+          "stadium": "bos",
+          "stage": "QF",
+          "date": "Jul 9",
+          "played": false,
+          "mode": "charter",
+          "opponent": "France",
+          "result": "upcoming"
+        }
+      ],
+      "verified": "knockout-verified"
+    },
+    {
+      "code": "SEN",
+      "name": "Senegal",
+      "flag": "🇸🇳",
+      "group": "D",
+      "status": "eliminated",
+      "confederation": "CAF",
+      "base": {
+        "name": "Rutgers University",
+        "city": "Piscataway, NJ",
+        "lat": 40.523,
+        "lon": -74.457
+      },
+      "fixtures": [
+        {
+          "stadium": "lax",
+          "stage": "Group",
+          "date": "Jun 12",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "sea",
+          "stage": "Group",
+          "date": "Jun 18",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "lax",
+          "stage": "Group",
+          "date": "Jun 24",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "sea",
+          "stage": "R32",
+          "date": "Jul 1",
+          "played": true,
+          "mode": "charter",
+          "opponent": "Belgium",
+          "result": "2-3 L (AET)"
+        }
+      ],
+      "verified": "knockout-verified"
+    },
+    {
+      "code": "TUN",
+      "name": "Tunisia",
+      "flag": "🇹🇳",
+      "group": "A",
+      "status": "eliminated",
+      "confederation": "CAF",
+      "base": {
+        "name": "Rayados Training Center",
+        "city": "Santiago, Mexico",
+        "lat": 25.437,
+        "lon": -100.15
+      },
+      "fixtures": [
+        {
+          "stadium": "mex",
+          "stage": "Group",
+          "date": "Jun 11",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "gua",
+          "stage": "Group",
+          "date": "Jun 18",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "mty",
+          "stage": "Group",
+          "date": "Jun 24",
+          "played": true,
+          "mode": "bus"
+        }
+      ],
+      "verified": "group-only"
+    },
+    {
+      "code": "EGY",
+      "name": "Egypt",
+      "flag": "🇪🇬",
+      "group": "B",
+      "status": "r16",
+      "confederation": "CAF",
+      "base": {
+        "name": "Gonzaga University",
+        "city": "Spokane, WA",
+        "lat": 47.667,
+        "lon": -117.399
+      },
+      "fixtures": [
+        {
+          "stadium": "tor",
+          "stage": "Group",
+          "date": "Jun 12",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "van",
+          "stage": "Group",
+          "date": "Jun 18",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "tor",
+          "stage": "Group",
+          "date": "Jun 24",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "dal",
+          "stage": "R32",
+          "date": "Jul 3",
+          "played": true,
+          "mode": "charter",
+          "opponent": "Australia",
+          "result": "1-1 W (pens 4-2)"
+        },
+        {
+          "stadium": "atl",
+          "stage": "R16",
+          "date": "Jul 7",
+          "played": false,
+          "mode": "charter",
+          "opponent": "Argentina",
+          "result": "upcoming"
+        }
+      ],
+      "verified": "knockout-verified"
+    },
+    {
+      "code": "ALG",
+      "name": "Algeria",
+      "flag": "🇩🇿",
+      "group": "G",
+      "status": "eliminated",
+      "confederation": "CAF",
+      "base": {
+        "name": "University of Kansas",
+        "city": "Lawrence, KS",
+        "lat": 38.955,
+        "lon": -95.256
+      },
+      "fixtures": [
+        {
+          "stadium": "kan",
+          "stage": "Group",
+          "date": "Jun 15",
+          "played": true,
+          "mode": "bus"
+        },
+        {
+          "stadium": "dal",
+          "stage": "Group",
+          "date": "Jun 21",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "atl",
+          "stage": "Group",
+          "date": "Jun 27",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "van",
+          "stage": "R32",
+          "date": "Jul 2",
+          "played": true,
+          "mode": "charter",
+          "opponent": "Switzerland",
+          "result": "0-2 L"
+        }
+      ],
+      "verified": "knockout-verified"
+    },
+    {
+      "code": "CIV",
+      "name": "Côte d'Ivoire",
+      "flag": "🇨🇮",
+      "group": "H",
+      "status": "eliminated",
+      "confederation": "CAF",
+      "base": {
+        "name": "Philadelphia Union Stadium",
+        "city": "Chester, PA",
+        "lat": 39.833,
+        "lon": -75.379
+      },
+      "fixtures": [
+        {
+          "stadium": "atl",
+          "stage": "Group",
+          "date": "Jun 15",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "mia",
+          "stage": "Group",
+          "date": "Jun 21",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "phi",
+          "stage": "Group",
+          "date": "Jun 27",
+          "played": true,
+          "mode": "bus"
+        },
+        {
+          "stadium": "dal",
+          "stage": "R32",
+          "date": "Jul 1",
+          "played": true,
+          "mode": "charter",
+          "opponent": "Norway",
+          "result": "1-2 L"
+        }
+      ],
+      "verified": "knockout-verified"
+    },
+    {
+      "code": "GHA",
+      "name": "Ghana",
+      "flag": "🇬🇭",
+      "group": "C",
+      "status": "eliminated",
+      "confederation": "CAF",
+      "base": {
+        "name": "Bryant University",
+        "city": "Smithfield, RI",
+        "lat": 41.921,
+        "lon": -71.535
+      },
+      "fixtures": [
+        {
+          "stadium": "atl",
+          "stage": "Group",
+          "date": "Jun 13",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "nyc",
+          "stage": "Group",
+          "date": "Jun 19",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "mia",
+          "stage": "Group",
+          "date": "Jun 25",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "sfo",
+          "stage": "R32",
+          "date": "Jul 2",
+          "played": true,
+          "mode": "charter",
+          "opponent": "Colombia",
+          "result": "0-1 L"
+        }
+      ],
+      "verified": "knockout-verified"
+    },
+    {
+      "code": "RSA",
+      "name": "South Africa",
+      "flag": "🇿🇦",
+      "group": "J",
+      "status": "eliminated",
+      "confederation": "CAF",
+      "base": {
+        "name": "CF Pachuca - Universidad Del Futbol",
+        "city": "Hidalgo, Mexico",
+        "lat": 20.099,
+        "lon": -98.735
+      },
+      "fixtures": [
+        {
+          "stadium": "kan",
+          "stage": "Group",
+          "date": "Jun 16",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "hou",
+          "stage": "Group",
+          "date": "Jun 22",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "dal",
+          "stage": "Group",
+          "date": "Jun 26",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "lax",
+          "stage": "R32",
+          "date": "Jun 28",
+          "played": true,
+          "mode": "charter",
+          "opponent": "Canada",
+          "result": "0-1 L"
+        }
+      ],
+      "verified": "knockout-verified"
+    },
+    {
+      "code": "CPV",
+      "name": "Cabo Verde",
+      "flag": "🇨🇻",
+      "group": "K",
+      "status": "eliminated",
+      "confederation": "CAF",
+      "base": {
+        "name": "Waters Sportsplex",
+        "city": "Tampa, FL",
+        "lat": 28.019,
+        "lon": -82.475
+      },
+      "fixtures": [
+        {
+          "stadium": "sfo",
+          "stage": "Group",
+          "date": "Jun 17",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "sea",
+          "stage": "Group",
+          "date": "Jun 23",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "kan",
+          "stage": "Group",
+          "date": "Jun 27",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "mia",
+          "stage": "R32",
+          "date": "Jul 3",
+          "played": true,
+          "mode": "charter",
+          "opponent": "Argentina",
+          "result": "2-3 L (AET)"
+        }
+      ],
+      "verified": "knockout-verified"
+    },
+    {
+      "code": "COD",
+      "name": "Congo DR",
+      "flag": "🇨🇩",
+      "group": "F",
+      "status": "eliminated",
+      "confederation": "CAF",
+      "base": {
+        "name": "Houston Sports Park",
+        "city": "Houston, TX",
+        "lat": 29.594,
+        "lon": -95.284
+      },
+      "fixtures": [
+        {
+          "stadium": "bos",
+          "stage": "Group",
+          "date": "Jun 14",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "phi",
+          "stage": "Group",
+          "date": "Jun 20",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "nyc",
+          "stage": "Group",
+          "date": "Jun 25",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "atl",
+          "stage": "R32",
+          "date": "Jul 1",
+          "played": true,
+          "mode": "charter",
+          "opponent": "England",
+          "result": "1-2 L"
+        }
+      ],
+      "verified": "knockout-verified"
+    },
+    {
+      "code": "SUI",
+      "name": "Switzerland",
+      "flag": "🇨🇭",
+      "group": "D",
+      "status": "r16",
+      "confederation": "UEFA",
+      "base": {
+        "name": "SDJA Athletics",
+        "city": "San Diego, CA",
+        "lat": 32.91,
+        "lon": -117.192
+      },
+      "fixtures": [
+        {
+          "stadium": "lax",
+          "stage": "Group",
+          "date": "Jun 12",
+          "played": true,
+          "mode": "bus"
+        },
+        {
+          "stadium": "sea",
+          "stage": "Group",
+          "date": "Jun 18",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "lax",
+          "stage": "Group",
+          "date": "Jun 24",
+          "played": true,
+          "mode": "bus"
+        },
+        {
+          "stadium": "van",
+          "stage": "R32",
+          "date": "Jul 2",
+          "played": true,
+          "mode": "charter",
+          "opponent": "Algeria",
+          "result": "2-0 W"
+        },
+        {
+          "stadium": "van",
+          "stage": "R16",
+          "date": "Jul 7",
+          "played": false,
+          "mode": "charter",
+          "opponent": "Colombia",
+          "result": "upcoming"
+        }
+      ],
+      "verified": "knockout-verified"
+    },
+    {
+      "code": "AUT",
+      "name": "Austria",
+      "flag": "🇦🇹",
+      "group": "A",
+      "status": "eliminated",
+      "confederation": "UEFA",
+      "base": {
+        "name": "UC Santa Barbara",
+        "city": "Santa Barbara, CA",
+        "lat": 34.412,
+        "lon": -119.849
+      },
+      "fixtures": [
+        {
+          "stadium": "mex",
+          "stage": "Group",
+          "date": "Jun 11",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "gua",
+          "stage": "Group",
+          "date": "Jun 18",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "mty",
+          "stage": "Group",
+          "date": "Jun 24",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "lax",
+          "stage": "R32",
+          "date": "Jul 2",
+          "played": true,
+          "mode": "charter",
+          "opponent": "Spain",
+          "result": "0-3 L"
+        }
+      ],
+      "verified": "knockout-verified"
+    },
+    {
+      "code": "TUR",
+      "name": "Türkiye",
+      "flag": "🇹🇷",
+      "group": "B",
+      "status": "eliminated",
+      "confederation": "UEFA",
+      "base": {
+        "name": "Arizona Athletic Grounds",
+        "city": "Mesa, AZ",
+        "lat": 33.393,
+        "lon": -111.716
+      },
+      "fixtures": [
+        {
+          "stadium": "tor",
+          "stage": "Group",
+          "date": "Jun 12",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "van",
+          "stage": "Group",
+          "date": "Jun 18",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "tor",
+          "stage": "Group",
+          "date": "Jun 24",
+          "played": true,
+          "mode": "charter"
+        }
+      ],
+      "verified": "group-only"
+    },
+    {
+      "code": "SCO",
+      "name": "Scotland",
+      "flag": "🏴󠁧󠁢󠁳󠁣󠁴󠁿",
+      "group": "L",
+      "status": "eliminated",
+      "confederation": "UEFA",
+      "base": {
+        "name": "Charlotte FC Training Center",
+        "city": "Charlotte, NC",
+        "lat": 35.226,
+        "lon": -80.843
+      },
+      "fixtures": [
+        {
+          "stadium": "sea",
+          "stage": "Group",
+          "date": "Jun 17",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "van",
+          "stage": "Group",
+          "date": "Jun 23",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "sfo",
+          "stage": "Group",
+          "date": "Jun 27",
+          "played": true,
+          "mode": "charter"
+        }
+      ],
+      "verified": "group-only"
+    },
+    {
+      "code": "NOR",
+      "name": "Norway",
+      "flag": "🇳🇴",
+      "group": "I",
+      "status": "qf",
+      "confederation": "UEFA",
+      "base": {
+        "name": "UNC Greensboro",
+        "city": "Greensboro, NC",
+        "lat": 36.062,
+        "lon": -79.809
+      },
+      "fixtures": [
+        {
+          "stadium": "mia",
+          "stage": "Group",
+          "date": "Jun 16",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "nyc",
+          "stage": "Group",
+          "date": "Jun 22",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "atl",
+          "stage": "Group",
+          "date": "Jun 26",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "dal",
+          "stage": "R32",
+          "date": "Jul 1",
+          "played": true,
+          "mode": "charter",
+          "opponent": "Ivory Coast",
+          "result": "2-1 W"
+        },
+        {
+          "stadium": "nyc",
+          "stage": "R16",
+          "date": "Jul 5",
+          "played": true,
+          "mode": "charter",
+          "opponent": "Brazil",
+          "result": "2-1 W"
+        },
+        {
+          "stadium": "mia",
+          "stage": "QF",
+          "date": "Jul 11",
+          "played": false,
+          "mode": "charter",
+          "opponent": "England",
+          "result": "upcoming"
+        }
+      ],
+      "verified": "knockout-verified"
+    },
+    {
+      "code": "SWE",
+      "name": "Sweden",
+      "flag": "🇸🇪",
+      "group": "C",
+      "status": "eliminated",
+      "confederation": "UEFA",
+      "base": {
+        "name": "FC Dallas Stadium",
+        "city": "Frisco, TX",
+        "lat": 33.155,
+        "lon": -96.836
+      },
+      "fixtures": [
+        {
+          "stadium": "atl",
+          "stage": "Group",
+          "date": "Jun 13",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "nyc",
+          "stage": "Group",
+          "date": "Jun 19",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "mia",
+          "stage": "Group",
+          "date": "Jun 25",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "nyc",
+          "stage": "R32",
+          "date": "Jun 30",
+          "played": true,
+          "mode": "charter",
+          "opponent": "France",
+          "result": "0-3 L"
+        }
+      ],
+      "verified": "knockout-verified"
+    },
+    {
+      "code": "CZE",
+      "name": "Czechia",
+      "flag": "🇨🇿",
+      "group": "G",
+      "status": "eliminated",
+      "confederation": "UEFA",
+      "base": {
+        "name": "Mansfield Multipurpose Stadium",
+        "city": "Mansfield, TX",
+        "lat": 32.564,
+        "lon": -97.144
+      },
+      "fixtures": [
+        {
+          "stadium": "kan",
+          "stage": "Group",
+          "date": "Jun 15",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "dal",
+          "stage": "Group",
+          "date": "Jun 21",
+          "played": true,
+          "mode": "bus"
+        },
+        {
+          "stadium": "atl",
+          "stage": "Group",
+          "date": "Jun 27",
+          "played": true,
+          "mode": "charter"
+        }
+      ],
+      "verified": "group-only"
+    },
+    {
+      "code": "BIH",
+      "name": "Bosnia & Herzegovina",
+      "flag": "🇧🇦",
+      "group": "D",
+      "status": "eliminated",
+      "confederation": "UEFA",
+      "base": {
+        "name": "RSL Stadium",
+        "city": "Sandy, UT",
+        "lat": 40.583,
+        "lon": -111.892
+      },
+      "fixtures": [
+        {
+          "stadium": "lax",
+          "stage": "Group",
+          "date": "Jun 12",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "sea",
+          "stage": "Group",
+          "date": "Jun 18",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "lax",
+          "stage": "Group",
+          "date": "Jun 24",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "sfo",
+          "stage": "R32",
+          "date": "Jul 1",
+          "played": true,
+          "mode": "charter",
+          "opponent": "USA",
+          "result": "0-2 L"
+        }
+      ],
+      "verified": "knockout-verified"
+    },
+    {
+      "code": "IRQ",
+      "name": "Iraq",
+      "flag": "🇮🇶",
+      "group": "E",
+      "status": "eliminated",
+      "confederation": "AFC",
+      "base": {
+        "name": "The Greenbrier Sports Performance Center",
+        "city": "White Sulphur Springs, WV",
+        "lat": 37.797,
+        "lon": -80.303
+      },
+      "fixtures": [
+        {
+          "stadium": "nyc",
+          "stage": "Group",
+          "date": "Jun 13",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "phi",
+          "stage": "Group",
+          "date": "Jun 19",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "atl",
+          "stage": "Group",
+          "date": "Jun 25",
+          "played": true,
+          "mode": "charter"
+        }
+      ],
+      "verified": "group-only"
+    },
+    {
+      "code": "NZL",
+      "name": "New Zealand",
+      "flag": "🇳🇿",
+      "group": "F",
+      "status": "eliminated",
+      "confederation": "OFC",
+      "base": {
+        "name": "University of San Diego",
+        "city": "San Diego, CA",
+        "lat": 32.771,
+        "lon": -117.19
+      },
+      "fixtures": [
+        {
+          "stadium": "bos",
+          "stage": "Group",
+          "date": "Jun 14",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "phi",
+          "stage": "Group",
+          "date": "Jun 20",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "nyc",
+          "stage": "Group",
+          "date": "Jun 25",
+          "played": true,
+          "mode": "charter"
+        }
+      ],
+      "verified": "group-only"
+    },
+    {
+      "code": "PAN",
+      "name": "Panama",
+      "flag": "🇵🇦",
+      "group": "L",
+      "status": "eliminated",
+      "confederation": "CONCACAF",
+      "base": {
+        "name": "Nottawasaga Training Site",
+        "city": "Ontario, Canada",
+        "lat": 44.157,
+        "lon": -79.867
+      },
+      "fixtures": [
+        {
+          "stadium": "sea",
+          "stage": "Group",
+          "date": "Jun 17",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "van",
+          "stage": "Group",
+          "date": "Jun 23",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "sfo",
+          "stage": "Group",
+          "date": "Jun 27",
+          "played": true,
+          "mode": "charter"
+        }
+      ],
+      "verified": "group-only"
+    },
+    {
+      "code": "HAI",
+      "name": "Haiti",
+      "flag": "🇭🇹",
+      "group": "H",
+      "status": "eliminated",
+      "confederation": "CONCACAF",
+      "base": {
+        "name": "Stockton University",
+        "city": "Galloway, NJ",
+        "lat": 39.484,
+        "lon": -74.538
+      },
+      "fixtures": [
+        {
+          "stadium": "atl",
+          "stage": "Group",
+          "date": "Jun 15",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "mia",
+          "stage": "Group",
+          "date": "Jun 21",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "phi",
+          "stage": "Group",
+          "date": "Jun 27",
+          "played": true,
+          "mode": "bus"
+        }
+      ],
+      "verified": "group-only"
+    },
+    {
+      "code": "CUW",
+      "name": "Curaçao",
+      "flag": "🇨🇼",
+      "group": "K",
+      "status": "eliminated",
+      "confederation": "CONCACAF",
+      "base": {
+        "name": "Florida Atlantic University",
+        "city": "Boca Raton, FL",
+        "lat": 26.372,
+        "lon": -80.104
+      },
+      "fixtures": [
+        {
+          "stadium": "sfo",
+          "stage": "Group",
+          "date": "Jun 17",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "sea",
+          "stage": "Group",
+          "date": "Jun 23",
+          "played": true,
+          "mode": "charter"
+        },
+        {
+          "stadium": "kan",
+          "stage": "Group",
+          "date": "Jun 27",
+          "played": true,
+          "mode": "charter"
+        }
+      ],
+      "verified": "group-only"
+    }
+  ]
+};
+</script>
+
+<script>
+/* ════════════════════════════════════════════════════════════════════════
+   TEAM TRACKER  ·  v1.0
+   ────────────────────────────────────────────────────────────────────────
+   Loads teams-data.json, renders a picker + map + emissions sidebar per
+   selected team. All 48 base camps sourced from FIFA / U.S. Soccer.
+
+   Math notes:
+   - Distances: great-circle (haversine) in km between lat/lon pairs
+   - Bus multiplier: × 1.25 to approximate road-network vs direct-flight
+   - Emissions:
+       charter flight  118 gCO2e / passenger-km
+       coach bus        75 gCO2e / passenger-km
+       (party size)     60 people
+   - Trip logic: for each fixture, one leg base→stadium + one leg back
+   - Modes: uses fixture.mode ("bus"|"charter"); auto-flip if bus route
+     would exceed the 500 km sanity threshold
+   ════════════════════════════════════════════════════════════════════════ */
+
+const EF_CHARTER_G_PER_PAX_KM = 118;
+const EF_BUS_G_PER_PAX_KM     = 75;
+const PARTY_SIZE              = 60;
+const BUS_MAX_ONE_WAY_KM      = 500;         // beyond this, force charter
+const ROAD_DETOUR             = 1.25;         // great-circle × this = road km
+
+let DATA = null;      // parsed teams-data.json
+let STADIUMS = null;  // shortcut to _meta.stadiums
+let selectedTeam = null;
+let activeFilter = 'all';
+
+/* ─── Data loading ────────────────────────────────────────────────────
+   Priority order:
+     1. Use embedded TEAMS_DATA constant if present  (works from file://)
+     2. Otherwise fall back to fetch('teams-data.json') (works when hosted)
+   The embedded version means the page runs by double-clicking the file
+   without needing a local server. When you host on Netlify / Vercel /
+   GitHub Pages the fetch fallback lets you swap in an updated JSON
+   without editing this HTML. ────────────────────────────────────── */
+async function loadData() {
+  // Path 1: embedded constant (offline-safe)
+  if (typeof TEAMS_DATA !== 'undefined' && TEAMS_DATA && TEAMS_DATA.teams) {
+    DATA = TEAMS_DATA;
+    STADIUMS = DATA._meta.stadiums;
+    document.getElementById('dataAsOf').textContent = DATA._meta.lastUpdated;
+    populatePicker();
+    updateCohortStats();
+    return;
+  }
+  // Path 2: hosted JSON fallback
+  try {
+    const r = await fetch('teams-data.json');
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    DATA = await r.json();
+    STADIUMS = DATA._meta.stadiums;
+    document.getElementById('dataAsOf').textContent = DATA._meta.lastUpdated;
+    populatePicker();
+    updateCohortStats();
+  } catch (err) {
+    document.getElementById('mapLoading').textContent = 'Data load failed · check teams-data.json';
+    console.error('Failed to load teams-data.json:', err);
+  }
+}
+
+/* ─── Populate team picker ─── */
+function populatePicker() {
+  const sel = document.getElementById('teamSelect');
+  sel.innerHTML = '<option value="">— Choose a team —</option>';
+  const teams = filterTeams(DATA.teams);
+  teams.sort((a,b) => a.name.localeCompare(b.name));
+  teams.forEach(t => {
+    const opt = document.createElement('option');
+    opt.value = t.code;
+    const stat = statusLabel(t.status);
+    opt.textContent = `${t.flag}  ${t.name}   ·  ${stat}`;
+    sel.appendChild(opt);
+  });
+}
+
+function filterTeams(teams) {
+  if (activeFilter === 'active')     return teams.filter(t => t.status !== 'eliminated');
+  if (activeFilter === 'eliminated') return teams.filter(t => t.status === 'eliminated');
+  return teams;
+}
+
+function statusLabel(s) {
+  return s === 'group'   ? 'Group stage' :
+         s === 'r32'     ? 'R32 · advancing' :
+         s === 'r16'     ? 'Round of 16' :
+         s === 'qf'      ? 'Quarter-finals' :
+         s === 'sf'      ? 'Semi-finals' :
+         s === 'final'   ? 'FINAL' :
+         s === 'winner'  ? '🏆 CHAMPIONS' :
+         s === 'eliminated' ? 'Gone home' : s;
+}
+
+/* ─── Math ─── */
+function haversineKm(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+  const toRad = d => d * Math.PI / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a = Math.sin(dLat/2)**2 +
+            Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+            Math.sin(dLon/2)**2;
+  return 2 * R * Math.asin(Math.sqrt(a));
+}
+
+/* Given a team, compute per-fixture legs.
+   Returns array of legs, each: { from, to, km, mode, played, stage }
+   For each fixture we emit two legs (out + return) UNLESS the next
+   fixture already picks up from that stadium (rare — we treat every
+   fixture as a round-trip to base for simplicity, matching the FIFA
+   Team Base Camp model where teams return between matches). */
+function computeLegs(team) {
+  const base = team.base;
+  const legs = [];
+  team.fixtures.forEach(fx => {
+    const st = STADIUMS[fx.stadium];
+    if (!st) return;
+    const gcKm = haversineKm(base.lat, base.lon, st.lat, st.lon);
+    // Auto-flip to charter if declared as bus but > threshold
+    let mode = fx.mode;
+    if (mode === 'bus' && gcKm > BUS_MAX_ONE_WAY_KM) mode = 'charter';
+    const km = (mode === 'bus') ? gcKm * ROAD_DETOUR : gcKm;
+    // Outbound leg
+    legs.push({ from:base, to:st, km, mode, played:fx.played, stage:fx.stage, date:fx.date, kind:'out' });
+    // Return leg
+    legs.push({ from:st, to:base, km, mode, played:fx.played, stage:fx.stage, date:fx.date, kind:'ret' });
+  });
+  return legs;
+}
+
+/* Compute team totals from legs */
+function computeEmissions(legs) {
+  let busKm = 0, flightKm = 0;
+  legs.forEach(l => { if (l.mode === 'bus') busKm += l.km; else flightKm += l.km; });
+  // gCO2e per pax-km × km × party size, converted to tonnes
+  const busT    = (busKm    * EF_BUS_G_PER_PAX_KM    * PARTY_SIZE) / 1e6;
+  const flightT = (flightKm * EF_CHARTER_G_PER_PAX_KM * PARTY_SIZE) / 1e6;
+  return {
+    busKm, flightKm, totalKm: busKm + flightKm,
+    busT, flightT, totalT: busT + flightT,
+  };
+}
+
+/* Cohort-level stats for the context cards */
+function updateCohortStats() {
+  let totalKm = 0, totalFlightKm = 0;
+  const perTeamKm = [];
+  DATA.teams.forEach(t => {
+    const em = computeEmissions(computeLegs(t));
+    totalKm += em.totalKm;
+    totalFlightKm += em.flightKm;
+    perTeamKm.push(em.totalKm);
+  });
+  const avg = perTeamKm.length ? totalKm / perTeamKm.length : 0;
+  const flightShare = totalKm > 0 ? (totalFlightKm / totalKm * 100) : 0;
+  document.getElementById('cohortAvgKm').textContent = fmtInt(avg) + ' km';
+  document.getElementById('cohortFlightShare').textContent = flightShare.toFixed(1) + '%';
+}
+
+/* ─── Format helpers ─── */
+const fmtInt = n => new Intl.NumberFormat('en-US').format(Math.round(n));
+const fmt1 = n => new Intl.NumberFormat('en-US', { maximumFractionDigits:1 }).format(n);
+
+/* ═══════════════════════════════════════════════════════════════════════
+   MAP MODULE
+   ═══════════════════════════════════════════════════════════════════════ */
+const MAP_W = 1000, MAP_H = 620;
+const HOST_NUM = { usa:840, can:124, mex:484 };
+const HOST_NUMS = new Set(Object.values(HOST_NUM));
+const CITY_BBOX_FEATURE = {
+  type:'Feature',
+  geometry:{ type:'Polygon', coordinates:[[[-126,52],[-69,52],[-69,17],[-126,17],[-126,52]]] },
+};
+const WORLD_ATLAS_URL = 'https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json';
+
+let proj = null;
+const mapSvg = document.getElementById('mapSvg');
+const mapTip = document.getElementById('mapTip');
+const mapLoadingEl = document.getElementById('mapLoading');
+
+async function buildMap() {
+  let world;
+  try {
+    world = await d3.json(WORLD_ATLAS_URL);
+  } catch (err) {
+    mapLoadingEl.textContent = 'Map unavailable · check connection';
+    console.warn('Map atlas failed', err);
+    return;
+  }
+  const countries = topojson.feature(world, world.objects.countries).features;
+  proj = d3.geoMercator().fitExtent([[10,10],[MAP_W-10,MAP_H-10]], CITY_BBOX_FEATURE);
+  const pathGen = d3.geoPath(proj);
+  const svg = d3.select(mapSvg);
+  svg.selectAll('*').remove();
+
+  // Graticule
+  svg.append('path').datum(d3.geoGraticule().step([10,10])()).attr('class','map-grid-bg').attr('d', pathGen);
+
+  // Other countries
+  svg.append('g').selectAll('path.other')
+    .data(countries.filter(f => !HOST_NUMS.has(+f.id)))
+    .enter().append('path').attr('class','map-country-other').attr('d', pathGen);
+
+  // Host countries
+  svg.append('g').selectAll('path.host')
+    .data(countries.filter(f => HOST_NUMS.has(+f.id)))
+    .enter().append('path').attr('class','map-country-host').attr('d', pathGen);
+
+  // Groups for dynamic overlays (order matters for z-index)
+  svg.append('g').attr('id','stadiumsG');
+  svg.append('g').attr('id','linesG');
+  svg.append('g').attr('id','baseG');
+
+  // Render all 16 stadiums as dim dots
+  Object.entries(STADIUMS).forEach(([code, st]) => {
+    const [x, y] = proj([st.lon, st.lat]);
+    const g = document.getElementById('stadiumsG');
+    const c = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    c.setAttribute('class','stadium-dot');
+    c.setAttribute('data-stadium', code);
+    c.setAttribute('cx', x); c.setAttribute('cy', y);
+    c.setAttribute('r', 4);
+    g.appendChild(c);
+    // Label
+    const t = document.createElementNS('http://www.w3.org/2000/svg','text');
+    t.setAttribute('class','stadium-label');
+    t.setAttribute('data-stadium', code);
+    t.setAttribute('x', x); t.setAttribute('y', y - 8);
+    t.textContent = st.city.split(' /')[0].split(',')[0];
+    g.appendChild(t);
+  });
+
+  mapLoadingEl.style.display = 'none';
+}
+
+/* Draw team-specific overlay: base marker + fixture lines + highlight
+   stadiums where they've played */
+function renderTeamOnMap(team) {
+  const linesG = document.getElementById('linesG');
+  const baseG  = document.getElementById('baseG');
+  linesG.innerHTML = '';
+  baseG.innerHTML = '';
+
+  // Reset stadium visuals
+  document.querySelectorAll('.stadium-dot').forEach(el => { el.classList.remove('match','upcoming'); el.setAttribute('r', 4); });
+  document.querySelectorAll('.stadium-label').forEach(el => el.classList.remove('match'));
+
+  if (!team) return;
+
+  const legs = computeLegs(team);
+
+  // Draw lines (outbound only — return would visually duplicate; use out lines)
+  legs.filter(l => l.kind === 'out').forEach(l => {
+    const [x1, y1] = proj([l.from.lon, l.from.lat]);
+    const [x2, y2] = proj([l.to.lon,   l.to.lat]);
+    const line = document.createElementNS('http://www.w3.org/2000/svg','path');
+    // Curved line for visual richness — quadratic bezier with midpoint offset
+    const mx = (x1 + x2) / 2;
+    const my = (y1 + y2) / 2 - Math.abs(x2 - x1) * 0.15;   // arc upward
+    line.setAttribute('d', `M ${x1} ${y1} Q ${mx} ${my} ${x2} ${y2}`);
+    let cls = l.mode === 'bus' ? 'line-bus' : 'line-flight';
+    if (!l.played) cls += ' line-upcoming';
+    line.setAttribute('class', cls);
+    linesG.appendChild(line);
+  });
+
+  // Highlight stadiums visited (or scheduled)
+  team.fixtures.forEach(fx => {
+    const dot = document.querySelector(`.stadium-dot[data-stadium="${fx.stadium}"]`);
+    const lbl = document.querySelector(`.stadium-label[data-stadium="${fx.stadium}"]`);
+    if (dot) {
+      dot.classList.add('match');
+      if (!fx.played) dot.classList.add('upcoming');
+      dot.setAttribute('r', 6);
+    }
+    if (lbl) lbl.classList.add('match');
+  });
+
+  // Base marker (gold diamond) — drawn last so it's on top
+  const [bx, by] = proj([team.base.lon, team.base.lat]);
+  // Outer glow ring
+  const glow = document.createElementNS('http://www.w3.org/2000/svg','circle');
+  glow.setAttribute('class','base-glow');
+  glow.setAttribute('cx', bx); glow.setAttribute('cy', by);
+  glow.setAttribute('r', 14);
+  baseG.appendChild(glow);
+  const glow2 = document.createElementNS('http://www.w3.org/2000/svg','circle');
+  glow2.setAttribute('class','base-glow');
+  glow2.setAttribute('cx', bx); glow2.setAttribute('cy', by);
+  glow2.setAttribute('r', 9);
+  baseG.appendChild(glow2);
+  // Diamond shape via rect rotated
+  const diamond = document.createElementNS('http://www.w3.org/2000/svg','rect');
+  diamond.setAttribute('class','base-marker');
+  diamond.setAttribute('x', bx - 5); diamond.setAttribute('y', by - 5);
+  diamond.setAttribute('width', 10); diamond.setAttribute('height', 10);
+  diamond.setAttribute('transform', `rotate(45 ${bx} ${by})`);
+  baseG.appendChild(diamond);
+  // Label
+  const label = document.createElementNS('http://www.w3.org/2000/svg','text');
+  label.setAttribute('class','base-label');
+  label.setAttribute('x', bx); label.setAttribute('y', by + 20);
+  label.textContent = team.flag + ' ' + team.name + ' · BASE';
+  baseG.appendChild(label);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   SIDEBAR RENDERING
+   ═══════════════════════════════════════════════════════════════════════ */
+function renderSidebar(team) {
+  const hero = document.getElementById('teamHero');
+  const emPanel = document.getElementById('emissionsPanel');
+  const fixList = document.getElementById('fixturesList');
+  const equivPanel = document.getElementById('equivPanel');
+  const equivList = document.getElementById('equivList');
+
+  if (!team) {
+    hero.innerHTML = `
+      <div class="team-hero-flag">🌍</div>
+      <div class="team-hero-name">Pick a team</div>
+      <div class="team-hero-meta"><span>Confederation<strong>—</strong></span><span>Group<strong>—</strong></span></div>
+      <div class="status-chip eliminated">No team selected</div>`;
+    document.getElementById('emTotal').textContent = '—';
+    document.getElementById('emSub').textContent = 'Select a team to see numbers';
+    document.getElementById('emModes').innerHTML = '';
+    fixList.innerHTML = '<div class="fixture-row"><div class="fixture-stage">—</div><div class="fixture-body" style="color:var(--muted)">Select a team to see fixtures.</div><div></div></div>';
+    equivPanel.style.display = 'none';
+    document.getElementById('statKm').textContent = '—';
+    document.getElementById('statCo2').textContent = '—';
+    document.getElementById('mapTitleTxt').textContent = 'Continental travel map';
+    document.getElementById('mapSubtitle').textContent = '— select a team above to render its routes';
+    return;
+  }
+
+  // HERO
+  const chipClass = team.status === 'winner' ? 'winner' :
+                    team.status === 'eliminated' ? 'eliminated' : 'active';
+  hero.innerHTML = `
+    <div class="team-hero-flag">${team.flag}</div>
+    <div class="team-hero-name">${team.name}</div>
+    <div class="team-hero-meta">
+      <span>Confederation<strong>${team.confederation}</strong></span>
+      <span>Group<strong>${team.group}</strong></span>
+      <span>Base<strong>${team.base.city}</strong></span>
+    </div>
+    <div class="status-chip ${chipClass}">${statusLabel(team.status)}</div>`;
+
+  // EMISSIONS
+  const legs = computeLegs(team);
+  const em = computeEmissions(legs);
+  document.getElementById('emTotal').textContent = fmt1(em.totalT);
+  document.getElementById('emSub').innerHTML =
+    `<strong>${fmtInt(em.totalKm)} km</strong> travelled · party of <strong>${PARTY_SIZE}</strong> · ${team.fixtures.filter(f=>f.played).length} of ${team.fixtures.length} legs played`;
+
+  // MODE breakdown
+  const totalKm = em.totalKm || 1;
+  document.getElementById('emModes').innerHTML = `
+    <div class="em-mode">
+      <div class="em-mode-head">
+        <div class="em-mode-name"><span class="em-swatch flight"></span>Charter flight</div>
+        <div class="em-mode-val">${fmt1(em.flightT)}<span class="u">t</span></div>
+      </div>
+      <div class="em-mode-bar"><div class="em-mode-bar-fill flight" style="width:${(em.flightKm/totalKm*100).toFixed(1)}%"></div></div>
+      <div class="em-mode-detail">${fmtInt(em.flightKm)} km · ${EF_CHARTER_G_PER_PAX_KM} g/pax-km</div>
+    </div>
+    <div class="em-mode">
+      <div class="em-mode-head">
+        <div class="em-mode-name"><span class="em-swatch bus"></span>Coach bus</div>
+        <div class="em-mode-val">${fmt1(em.busT)}<span class="u">t</span></div>
+      </div>
+      <div class="em-mode-bar"><div class="em-mode-bar-fill bus" style="width:${(em.busKm/totalKm*100).toFixed(1)}%"></div></div>
+      <div class="em-mode-detail">${fmtInt(em.busKm)} km · ${EF_BUS_G_PER_PAX_KM} g/pax-km</div>
+    </div>`;
+
+  // FIXTURES
+  fixList.innerHTML = team.fixtures.map(fx => {
+    const st = STADIUMS[fx.stadium];
+    const upcoming = !fx.played;
+    // Show opponent + result when we have them (verified knockout data)
+    const oppLine = fx.opponent
+      ? `<div style="font-family:var(--mono);font-size:.55rem;letter-spacing:.04em;color:${fx.result && fx.result.includes(' L') ? 'var(--red)' : fx.result === 'upcoming' ? 'var(--amber)' : 'var(--green-dk)'};margin-top:.18rem;text-transform:uppercase">vs ${fx.opponent} · ${fx.result}</div>`
+      : '';
+    return `
+      <div class="fixture-row ${upcoming ? 'upcoming' : ''}">
+        <div class="fixture-stage">${fx.stage}</div>
+        <div class="fixture-body">
+          <strong>${st.city.split(' /')[0]}</strong> · ${fx.date}
+          <span>${st.name}</span>
+          ${oppLine}
+        </div>
+        <div class="fixture-mode ${fx.mode}">${fx.mode === 'bus' ? '🚌 bus' : '✈ charter'}</div>
+      </div>`;
+  }).join('');
+
+  // EQUIVALENCES
+  equivPanel.style.display = 'block';
+  const flights = em.totalT / 0.5;                 // 0.5 t per trans-Atlantic passenger
+  const cars    = em.totalT / 4.6;                 // 4.6 t per US car-year
+  const trees   = em.totalT / 0.021;               // 21 kg per mature tree per year
+  equivList.innerHTML = `
+    <div class="equiv-row"><div class="equiv-num">${fmtInt(flights)}</div><div class="equiv-txt"><strong>trans-Atlantic flights</strong> · one passenger each</div></div>
+    <div class="equiv-row"><div class="equiv-num">${fmtInt(cars)}</div><div class="equiv-txt">US cars driven for <strong>one year</strong></div></div>
+    <div class="equiv-row"><div class="equiv-num">${fmtInt(trees)}</div><div class="equiv-txt">mature trees needed to <strong>offset in 12 months</strong></div></div>`;
+
+  // Header stats
+  document.getElementById('statKm').textContent = fmtInt(em.totalKm) + ' km';
+  document.getElementById('statCo2').textContent = fmt1(em.totalT) + ' t';
+
+  // Map title updates
+  document.getElementById('mapTitleTxt').textContent = team.flag + ' ' + team.name + ' · Travel map';
+  document.getElementById('mapSubtitle').textContent =
+    `— ${team.fixtures.length} legs · ${fmtInt(em.totalKm)} km · ${fmt1(em.totalT)} t CO₂e`;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   EVENT WIRING
+   ═══════════════════════════════════════════════════════════════════════ */
+document.getElementById('teamSelect').addEventListener('change', e => {
+  const code = e.target.value;
+  selectedTeam = code ? DATA.teams.find(t => t.code === code) : null;
+  renderTeamOnMap(selectedTeam);
+  renderSidebar(selectedTeam);
+});
+
+document.querySelectorAll('.fbtn[data-filter]').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('.fbtn[data-filter]').forEach(x => x.classList.remove('on'));
+    b.classList.add('on');
+    activeFilter = b.dataset.filter;
+    populatePicker();
+    // If the currently selected team is filtered out, clear it
+    if (selectedTeam) {
+      const stillVisible = filterTeams(DATA.teams).some(t => t.code === selectedTeam.code);
+      if (!stillVisible) {
+        selectedTeam = null;
+        document.getElementById('teamSelect').value = '';
+        renderTeamOnMap(null);
+        renderSidebar(null);
+      }
+    }
+  });
+});
+
+/* Bootstrap */
+(async () => {
+  await Promise.all([loadData(), buildMap()]);
+})();
+</script>
+</body>
+</html>
